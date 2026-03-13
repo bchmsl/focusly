@@ -16,9 +16,43 @@ const TAG_COLORS = [
   "#8b5cf6", "#ef4444", "#14b8a6", "#f97316", "#64748b",
 ];
 
-const SettingsPanel = () => {
+const SettingsPanel = ({ onTagsChanged }: { onTagsChanged?: () => void }) => {
+  const { user } = useAuth();
   const { settings, updateSettings } = useSettings();
   const [open, setOpen] = useState(false);
+  const [tags, setTags] = useState<TagType[]>([]);
+  const [editingTagId, setEditingTagId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({ name: "", color: "", emoji: "" });
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
+  const loadTags = useCallback(async () => {
+    if (!user) return;
+    const { data } = await supabase.from("tags").select("id, name, color, emoji").eq("user_id", user.id).order("created_at", { ascending: true });
+    if (data) setTags(data as TagType[]);
+  }, [user]);
+
+  useEffect(() => { if (open) loadTags(); }, [open, loadTags]);
+
+  const startEditTag = (tag: TagType) => {
+    setEditingTagId(tag.id);
+    setEditForm({ name: tag.name, color: tag.color, emoji: tag.emoji || "" });
+  };
+
+  const saveTagEdit = async () => {
+    if (!editingTagId || !editForm.name.trim()) return;
+    const updates = { name: editForm.name.trim(), color: editForm.color, emoji: editForm.emoji.trim() || null };
+    setTags((prev) => prev.map((t) => t.id === editingTagId ? { ...t, ...updates } : t));
+    setEditingTagId(null);
+    await supabase.from("tags").update(updates).eq("id", editingTagId);
+    onTagsChanged?.();
+  };
+
+  const deleteTag = async (tagId: string) => {
+    setTags((prev) => prev.filter((t) => t.id !== tagId));
+    setConfirmDeleteId(null);
+    await supabase.from("tags").delete().eq("id", tagId);
+    onTagsChanged?.();
+  };
 
   if (!open) {
     return (
