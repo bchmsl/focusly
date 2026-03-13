@@ -101,8 +101,9 @@ const TodoList = () => {
 
   const onDragEnd = (result: DropResult) => {
     if (!result.destination) return;
-    const { source, destination, droppableId } = result;
-    if (source.index === destination.index) return;
+    const { source, destination } = result;
+    if (source.index === destination.index && source.droppableId === destination.droppableId) return;
+    const droppableId = source.droppableId;
 
     if (droppableId === "pending") {
       const pending = topLevel.filter((t) => !t.done).sort((a, b) => a.position - b.position);
