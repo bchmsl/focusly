@@ -161,24 +161,24 @@
 
   /* ── Lavender ── */
   .theme-lavender {
-    --background: 270 20% 98%;
-    --foreground: 270 25% 18%;
-    --card: 270 20% 100%;
-    --card-foreground: 270 25% 18%;
-    --popover: 270 20% 100%;
-    --popover-foreground: 270 25% 18%;
+    --background: 268 32% 96%;
+    --foreground: 270 28% 16%;
+    --card: 268 28% 98%;
+    --card-foreground: 270 28% 16%;
+    --popover: 268 28% 98%;
+    --popover-foreground: 270 28% 16%;
     --primary: 263 70% 71%;
     --primary-foreground: 0 0% 100%;
     --secondary: 330 80% 65%;
     --secondary-foreground: 0 0% 100%;
-    --muted: 270 12% 95%;
-    --muted-foreground: 270 10% 46%;
-    --accent: 270 12% 90%;
-    --accent-foreground: 270 25% 18%;
+    --muted: 268 20% 92%;
+    --muted-foreground: 270 14% 43%;
+    --accent: 268 20% 88%;
+    --accent-foreground: 270 28% 16%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 270 12% 89%;
-    --input: 270 12% 89%;
+    --border: 268 18% 87%;
+    --input: 268 18% 87%;
     --ring: 263 70% 71%;
     --radius: 0.75rem;
   }
