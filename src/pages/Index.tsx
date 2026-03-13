@@ -92,7 +92,7 @@ const Index = () => {
           <div className="flex flex-col">
             <div className="w-full rounded-2xl border bg-card p-6 shadow-sm">
               <h2 className="mb-4 text-base font-semibold">Tasks</h2>
-              <TodoList key={tagVersion} />
+              <TodoList key={contentKey} />
             </div>
           </div>
         </div>
