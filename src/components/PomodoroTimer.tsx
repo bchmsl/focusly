@@ -186,20 +186,28 @@ const PomodoroTimer = ({ onTimerEnd }: PomodoroTimerProps) => {
     return clearTimer;
   }, [isRunning, clearTimer, handleTimerComplete, loaded]);
 
-  // Update duration when settings change (only if timer is at full/not started)
+  // Update duration when settings change (only if timer isn't running)
+  const prevFocusDur = useRef(settings.focusDuration);
+  const prevShortDur = useRef(settings.shortBreakDuration);
+  const prevLongDur = useRef(settings.longBreakDuration);
+
   useEffect(() => {
     if (!loaded) return;
-    const newDurations = getDurations();
-    const prev = prevDurationsRef.current;
-    prevDurationsRef.current = newDurations;
 
-    if (!prev) return;
-    if (isRunning) return;
+    const changed =
+      prevFocusDur.current !== settings.focusDuration ||
+      prevShortDur.current !== settings.shortBreakDuration ||
+      prevLongDur.current !== settings.longBreakDuration;
 
-    const newDurationForMode = newDurations[mode];
-    // Always reset to full when duration changes and timer isn't running
-    setTimeLeft(newDurationForMode);
-    saveState(mode, newDurationForMode, false, completedSessions);
+    prevFocusDur.current = settings.focusDuration;
+    prevShortDur.current = settings.shortBreakDuration;
+    prevLongDur.current = settings.longBreakDuration;
+
+    if (!changed || isRunning) return;
+
+    const newDuration = getDurations()[mode];
+    setTimeLeft(newDuration);
+    saveState(mode, newDuration, false, completedSessions);
   }, [settings.focusDuration, settings.shortBreakDuration, settings.longBreakDuration, loaded, isRunning, mode, getDurations, saveState, completedSessions]);
 
   const toggleRunning = () => {
