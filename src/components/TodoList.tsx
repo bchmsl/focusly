@@ -383,7 +383,7 @@ const TodoList = () => {
 
       {/* Edit dialog */}
       <TaskEditDialog
-        task={editTask}
+        task={editTask ? tasks.find(t => t.id === editTask.id) || editTask : null}
         open={editDialogOpen}
         onOpenChange={(open) => {
           setEditDialogOpen(open);
