@@ -33,7 +33,16 @@ const PomodoroTimer = ({ onTimerEnd }: PomodoroTimerProps) => {
   const [loaded, setLoaded] = useState(false);
   const intervalRef = useRef<number | null>(null);
   const saveTimeoutRef = useRef<number | null>(null);
-  const autoStartRef = useRef(false);
+
+  // Use refs to avoid stale closures in the timer interval
+  const modeRef = useRef(mode);
+  const completedSessionsRef = useRef(completedSessions);
+  const settingsRef = useRef(settings);
+  const prevDurationsRef = useRef<Record<TimerMode, number> | null>(null);
+
+  modeRef.current = mode;
+  completedSessionsRef.current = completedSessions;
+  settingsRef.current = settings;
 
   const durations = getDurations();
   const totalTime = durations[mode];
@@ -46,7 +55,6 @@ const PomodoroTimer = ({ onTimerEnd }: PomodoroTimerProps) => {
     }
   }, []);
 
-  // Play notification sound
   const playSound = useCallback(() => {
     if (!settings.soundEnabled) return;
     try {
@@ -54,8 +62,6 @@ const PomodoroTimer = ({ onTimerEnd }: PomodoroTimerProps) => {
       const vol = ctx.createGain();
       vol.gain.value = settings.soundVolume / 100;
       vol.connect(ctx.destination);
-
-      // Two-tone chime
       [440, 660].forEach((freq, i) => {
         const osc = ctx.createOscillator();
         osc.type = "sine";
@@ -68,6 +74,27 @@ const PomodoroTimer = ({ onTimerEnd }: PomodoroTimerProps) => {
       // AudioContext may not be available
     }
   }, [settings.soundEnabled, settings.soundVolume]);
+
+  // Save timer state (debounced)
+  const saveState = useCallback(
+    (m: TimerMode, tl: number, running: boolean, sessions: number) => {
+      if (!user) return;
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+      saveTimeoutRef.current = window.setTimeout(async () => {
+        await supabase
+          .from("timer_state")
+          .upsert({
+            user_id: user.id,
+            mode: m,
+            time_left: tl,
+            is_running: running,
+            completed_sessions: sessions,
+            last_tick_at: running ? new Date().toISOString() : null,
+          }, { onConflict: "user_id" });
+      }, 500);
+    },
+    [user]
+  );
 
   // Load timer state from DB
   useEffect(() => {
@@ -94,36 +121,16 @@ const PomodoroTimer = ({ onTimerEnd }: PomodoroTimerProps) => {
       } else {
         setTimeLeft(d.focus);
       }
+      prevDurationsRef.current = d;
       setLoaded(true);
     };
     load();
   }, [user, settingsLoaded, getDurations]);
 
-  // Save timer state (debounced)
-  const saveState = useCallback(
-    (m: TimerMode, tl: number, running: boolean, sessions: number) => {
-      if (!user) return;
-      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-      saveTimeoutRef.current = window.setTimeout(async () => {
-        await supabase
-          .from("timer_state")
-          .upsert({
-            user_id: user.id,
-            mode: m,
-            time_left: tl,
-            is_running: running,
-            completed_sessions: sessions,
-            last_tick_at: running ? new Date().toISOString() : null,
-          }, { onConflict: "user_id" });
-      }, 500);
-    },
-    [user]
-  );
-
   const switchMode = useCallback(
     (newMode: TimerMode, sessions?: number, autoStart?: boolean) => {
       clearTimer();
-      const s = sessions ?? completedSessions;
+      const s = sessions ?? completedSessionsRef.current;
       const d = getDurations();
       setMode(newMode);
       setTimeLeft(d[newMode]);
@@ -131,26 +138,33 @@ const PomodoroTimer = ({ onTimerEnd }: PomodoroTimerProps) => {
       setIsRunning(shouldAutoStart);
       saveState(newMode, d[newMode], shouldAutoStart, s);
     },
-    [clearTimer, completedSessions, saveState, getDurations]
+    [clearTimer, saveState, getDurations]
   );
 
-  const handleSkip = useCallback(() => {
+  // Called when timer reaches zero or user clicks skip
+  const handleTimerComplete = useCallback(() => {
     playSound();
-    onTimerEnd?.(mode === "focus" ? "Focus session" : mode === "shortBreak" ? "Short break" : "Long break");
-    if (mode === "focus") {
-      const next = completedSessions + 1;
+    const currentMode = modeRef.current;
+    const sessions = completedSessionsRef.current;
+    const s = settingsRef.current;
+
+    onTimerEnd?.(currentMode === "focus" ? "Focus session" : currentMode === "shortBreak" ? "Short break" : "Long break");
+
+    if (currentMode === "focus") {
+      const next = sessions + 1;
       setCompletedSessions(next);
-      if (next >= settings.longBreakInterval) {
-        switchMode("longBreak", 0, settings.autoStartBreaks);
+      if (next >= s.longBreakInterval) {
         setCompletedSessions(0);
+        switchMode("longBreak", 0, s.autoStartBreaks);
       } else {
-        switchMode("shortBreak", next, settings.autoStartBreaks);
+        switchMode("shortBreak", next, s.autoStartBreaks);
       }
     } else {
-      switchMode("focus", undefined, settings.autoStartFocus);
+      switchMode("focus", undefined, s.autoStartFocus);
     }
-  }, [mode, completedSessions, switchMode, settings.longBreakInterval, settings.autoStartBreaks, settings.autoStartFocus, playSound]);
+  }, [switchMode, playSound, onTimerEnd]);
 
+  // Timer tick effect
   useEffect(() => {
     if (!loaded) return;
     if (isRunning) {
@@ -159,8 +173,8 @@ const PomodoroTimer = ({ onTimerEnd }: PomodoroTimerProps) => {
           if (prev <= 1) {
             clearTimer();
             setIsRunning(false);
-            autoStartRef.current = true;
-            setTimeout(() => handleSkip(), 300);
+            // Use setTimeout to avoid setState-in-setState
+            setTimeout(() => handleTimerComplete(), 50);
             return 0;
           }
           return prev - 1;
@@ -170,26 +184,27 @@ const PomodoroTimer = ({ onTimerEnd }: PomodoroTimerProps) => {
       clearTimer();
     }
     return clearTimer;
-  }, [isRunning, clearTimer, handleSkip, loaded]);
+  }, [isRunning, clearTimer, handleTimerComplete, loaded]);
 
-  // Update duration when settings change (only if timer hasn't started)
+  // Update duration when settings change (only if timer is at full/not started)
   useEffect(() => {
     if (!loaded) return;
-    const d = getDurations();
-    if (!isRunning && timeLeft === durations[mode]) {
-      // Timer is at full — update to new duration
-    }
-    // If not running and at default, update
-    if (!isRunning) {
-      const currentDuration = d[mode];
-      // Only update if timer hasn't been manually changed
-      setTimeLeft((prev) => {
-        const oldDuration = durations[mode];
-        if (prev === oldDuration || prev > currentDuration) return currentDuration;
-        return prev;
-      });
-    }
-  }, [settings.focusDuration, settings.shortBreakDuration, settings.longBreakDuration]);
+    const newDurations = getDurations();
+    const prev = prevDurationsRef.current;
+    prevDurationsRef.current = newDurations;
+
+    if (!prev) return;
+    if (isRunning) return; // Don't change while running
+
+    const oldDurationForMode = prev[mode];
+    const newDurationForMode = newDurations[mode];
+
+    // Only auto-update if the timer is at the old full duration (hasn't been partially used)
+    setTimeLeft((current) => {
+      if (current === oldDurationForMode) return newDurationForMode;
+      return current;
+    });
+  }, [settings.focusDuration, settings.shortBreakDuration, settings.longBreakDuration, loaded, isRunning, mode, getDurations]);
 
   const toggleRunning = () => {
     const next = !isRunning;
@@ -279,7 +294,7 @@ const PomodoroTimer = ({ onTimerEnd }: PomodoroTimerProps) => {
         >
           {isRunning ? <Pause className="h-6 w-6" /> : <Play className="ml-0.5 h-6 w-6" />}
         </button>
-        <button onClick={handleSkip} className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" aria-label="Skip">
+        <button onClick={handleTimerComplete} className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" aria-label="Skip">
           <SkipForward className="h-4 w-4" />
         </button>
       </div>
