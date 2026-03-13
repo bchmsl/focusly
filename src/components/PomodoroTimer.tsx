@@ -203,10 +203,13 @@ const PomodoroTimer = ({ onTimerEnd }: PomodoroTimerProps) => {
     prevShortDur.current = settings.shortBreakDuration;
     prevLongDur.current = settings.longBreakDuration;
 
-    if (!changed || isRunning) return;
+    if (!changed) return;
 
+    // Always reset timer and progress when duration changes, even if running
+    clearTimer();
     const newDuration = getDurations()[mode];
     setTimeLeft(newDuration);
+    setIsRunning(false);
     saveState(mode, newDuration, false, completedSessions);
   }, [settings.focusDuration, settings.shortBreakDuration, settings.longBreakDuration, loaded, isRunning, mode, getDurations, saveState, completedSessions]);
 
