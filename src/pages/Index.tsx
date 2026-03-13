@@ -69,7 +69,7 @@ const Index = () => {
               )
             )}
 
-            <SettingsPanel onTagsChanged={() => setTagVersion((v) => v + 1)} />
+            <SettingsPanel onTagsChanged={() => setContentKey((v) => v + 1)} />
             <ThemeToggle />
             <button
               onClick={handleSignOut}
