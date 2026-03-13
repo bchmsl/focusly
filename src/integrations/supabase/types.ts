@@ -197,6 +197,7 @@ export type Database = {
         Row: {
           auto_start_breaks: boolean
           auto_start_focus: boolean
+          color_mode: string
           created_at: string
           focus_duration: number
           id: string
@@ -205,12 +206,14 @@ export type Database = {
           short_break_duration: number
           sound_enabled: boolean
           sound_volume: number
+          theme_id: string
           updated_at: string
           user_id: string
         }
         Insert: {
           auto_start_breaks?: boolean
           auto_start_focus?: boolean
+          color_mode?: string
           created_at?: string
           focus_duration?: number
           id?: string
@@ -219,12 +222,14 @@ export type Database = {
           short_break_duration?: number
           sound_enabled?: boolean
           sound_volume?: number
+          theme_id?: string
           updated_at?: string
           user_id: string
         }
         Update: {
           auto_start_breaks?: boolean
           auto_start_focus?: boolean
+          color_mode?: string
           created_at?: string
           focus_duration?: number
           id?: string
@@ -233,6 +238,7 @@ export type Database = {
           short_break_duration?: number
           sound_enabled?: boolean
           sound_volume?: number
+          theme_id?: string
           updated_at?: string
           user_id?: string
         }
