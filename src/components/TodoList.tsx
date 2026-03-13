@@ -192,6 +192,31 @@ const TodoList = () => {
                 <input value={editForm.text} onChange={(e) => setEditForm((f) => ({ ...f, text: e.target.value }))} placeholder="Title" className="w-full rounded-md border bg-card px-3 py-1.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20" />
                 <input value={editForm.subtitle} onChange={(e) => setEditForm((f) => ({ ...f, subtitle: e.target.value }))} placeholder="Subtitle (optional)" className="w-full rounded-md border bg-card px-3 py-1.5 text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20" />
                 <textarea value={editForm.body} onChange={(e) => setEditForm((f) => ({ ...f, body: e.target.value }))} placeholder="Notes / details (optional)" rows={3} className="w-full rounded-md border bg-card px-3 py-1.5 text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20 resize-y" />
+                {/* Add subtask inside edit */}
+                {!isSubtask && (
+                  subtaskInputId === task.id ? (
+                    <form onSubmit={(e) => { e.preventDefault(); addSubtask(task.id); }} className="flex gap-2">
+                      <input
+                        autoFocus
+                        value={subtaskInput}
+                        onChange={(e) => setSubtaskInput(e.target.value)}
+                        placeholder="Add subtask..."
+                        className="flex-1 rounded-md border bg-card px-3 py-1.5 text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20"
+                        onBlur={() => { if (!subtaskInput.trim()) setSubtaskInputId(null); }}
+                      />
+                      <button type="submit" className="rounded-md bg-primary px-2.5 py-1 text-xs text-primary-foreground hover:bg-primary/90 transition-colors">
+                        <Plus className="h-3 w-3" />
+                      </button>
+                    </form>
+                  ) : (
+                    <button
+                      onClick={() => { setSubtaskInputId(task.id); setSubtaskInput(""); }}
+                      className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <Plus className="h-3 w-3" /> Add subtask
+                    </button>
+                  )
+                )}
                 <div className="flex gap-2">
                   <button onClick={saveEdit} className="rounded-md bg-primary px-3 py-1 text-xs text-primary-foreground hover:bg-primary/90 transition-colors">Save</button>
                   <button onClick={cancelEdit} className="rounded-md bg-muted px-3 py-1 text-xs text-muted-foreground hover:bg-muted/80 transition-colors">Cancel</button>
@@ -228,31 +253,6 @@ const TodoList = () => {
               </Droppable>
             )}
 
-            {/* Add subtask */}
-            {!isSubtask && (
-              subtaskInputId === task.id ? (
-                <form onSubmit={(e) => { e.preventDefault(); addSubtask(task.id); }} className="flex gap-2 mt-1">
-                  <input
-                    autoFocus
-                    value={subtaskInput}
-                    onChange={(e) => setSubtaskInput(e.target.value)}
-                    placeholder="Add subtask..."
-                    className="flex-1 rounded-md border bg-card px-3 py-1.5 text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20"
-                    onBlur={() => { if (!subtaskInput.trim()) setSubtaskInputId(null); }}
-                  />
-                  <button type="submit" className="rounded-md bg-primary px-2.5 py-1 text-xs text-primary-foreground hover:bg-primary/90 transition-colors">
-                    <Plus className="h-3 w-3" />
-                  </button>
-                </form>
-              ) : (
-                <button
-                  onClick={() => { setSubtaskInputId(task.id); setSubtaskInput(""); }}
-                  className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mt-1"
-                >
-                  <Plus className="h-3 w-3" /> Add subtask
-                </button>
-              )
-            )}
           </div>
         )}
       </div>
