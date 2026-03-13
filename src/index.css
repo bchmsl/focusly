@@ -69,24 +69,24 @@
 
   /* ── Ocean ── */
   .theme-ocean {
-    --background: 204 20% 97%;
-    --foreground: 213 27% 15%;
-    --card: 204 20% 100%;
-    --card-foreground: 213 27% 15%;
-    --popover: 204 20% 100%;
-    --popover-foreground: 213 27% 15%;
+    --background: 200 35% 96%;
+    --foreground: 210 30% 14%;
+    --card: 200 30% 98%;
+    --card-foreground: 210 30% 14%;
+    --popover: 200 30% 98%;
+    --popover-foreground: 210 30% 14%;
     --primary: 199 89% 48%;
     --primary-foreground: 0 0% 100%;
     --secondary: 172 66% 50%;
     --secondary-foreground: 0 0% 100%;
-    --muted: 210 14% 95%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 210 14% 90%;
-    --accent-foreground: 213 27% 15%;
+    --muted: 200 22% 92%;
+    --muted-foreground: 210 16% 44%;
+    --accent: 200 22% 88%;
+    --accent-foreground: 210 30% 14%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 210 14% 89%;
-    --input: 210 14% 89%;
+    --border: 200 20% 87%;
+    --input: 200 20% 87%;
     --ring: 199 89% 48%;
     --radius: 0.75rem;
   }
