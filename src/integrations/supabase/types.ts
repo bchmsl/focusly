@@ -14,7 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      tasks: {
+        Row: {
+          created_at: string
+          done: boolean
+          id: string
+          text: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          done?: boolean
+          id?: string
+          text: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          done?: boolean
+          id?: string
+          text?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      timer_state: {
+        Row: {
+          completed_sessions: number
+          id: string
+          is_running: boolean
+          last_tick_at: string | null
+          mode: string
+          time_left: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_sessions?: number
+          id?: string
+          is_running?: boolean
+          last_tick_at?: string | null
+          mode?: string
+          time_left?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_sessions?: number
+          id?: string
+          is_running?: boolean
+          last_tick_at?: string | null
+          mode?: string
+          time_left?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
