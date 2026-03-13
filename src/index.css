@@ -40,7 +40,7 @@
     --sidebar-ring: 350 91% 60%;
   }
 
-  .theme-coral.dark {
+  html.theme-coral.dark, :root.dark {
     --background: 222 20% 10%;
     --foreground: 210 20% 92%;
     --card: 222 18% 14%;
