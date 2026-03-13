@@ -174,8 +174,25 @@ const TaskEditDialog = ({
     await supabase.from("tasks").delete().eq("id", task.id);
   };
 
+  const handleOpenChange = async (newOpen: boolean) => {
+    if (!newOpen && task) {
+      // Auto-save title and body on close
+      const trimmedTitle = title.trim() || "Untitled";
+      const trimmedBody = body.trim() || null;
+      if (trimmedTitle !== task.text) {
+        onTasksChange(tasks.map((t) => (t.id === task.id ? { ...t, text: trimmedTitle } : t)));
+        await supabase.from("tasks").update({ text: trimmedTitle }).eq("id", task.id);
+      }
+      if (trimmedBody !== task.body) {
+        onTasksChange(tasks.map((t) => (t.id === task.id ? { ...t, body: trimmedBody } : t)));
+        await supabase.from("tasks").update({ body: trimmedBody }).eq("id", task.id);
+      }
+    }
+    onOpenChange(newOpen);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="sr-only">Edit Task</DialogTitle>
