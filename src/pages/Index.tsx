@@ -46,6 +46,8 @@ const Index = () => {
           >
             <RefreshCw className={`h-5 w-5 ${spinning ? "animate-spin" : ""}`} />
           </button>
+          <h1 className="text-lg font-semibold">Focusly</h1>
+          <div className="ml-auto flex items-center gap-3">
             <span className="text-sm text-muted-foreground hidden sm:inline">{user?.email}</span>
 
             {/* Push notification toggle */}
