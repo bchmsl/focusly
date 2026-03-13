@@ -40,7 +40,8 @@ const Index = () => {
           <button
             onClick={() => {
               setSpinning(true);
-              window.location.reload();
+              setContentKey((k) => k + 1);
+              setTimeout(() => setSpinning(false), 600);
             }}
             className="p-1 text-primary hover:text-primary/80 transition-colors"
             title="Refresh"
