@@ -11,6 +11,7 @@ import { usePushNotifications } from "@/hooks/usePushNotifications";
 const Index = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const [tagVersion, setTagVersion] = useState(0);
   const { permission, subscribed, subscribe, sendNotification, isSupported } = usePushNotifications();
 
   const handleSignOut = async () => {
