@@ -93,7 +93,7 @@
     --ring: 199 89% 48%;
   }
 
-  html.theme-ocean.dark {
+  [data-theme="ocean"].dark {
     --background: 215 28% 9%;
     --foreground: 210 20% 92%;
     --card: 215 25% 13%;
