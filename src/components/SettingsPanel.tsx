@@ -1,5 +1,20 @@
-import { useState } from "react";
-import { Settings, X, Volume2, VolumeX, Clock, Zap } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Settings, X, Volume2, VolumeX, Clock, Zap, Tag, Trash2, Pencil, Check } from "lucide-react";
+import { useSettings } from "@/contexts/SettingsContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+
+interface TagType {
+  id: string;
+  name: string;
+  color: string;
+  emoji: string | null;
+}
+
+const TAG_COLORS = [
+  "#6366f1", "#ec4899", "#f59e0b", "#10b981", "#3b82f6",
+  "#8b5cf6", "#ef4444", "#14b8a6", "#f97316", "#64748b",
+];
 import { useSettings } from "@/contexts/SettingsContext";
 
 const SettingsPanel = () => {
