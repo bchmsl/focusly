@@ -136,6 +136,7 @@ const PomodoroTimer = ({ onTimerEnd }: PomodoroTimerProps) => {
 
   const handleSkip = useCallback(() => {
     playSound();
+    onTimerEnd?.(mode === "focus" ? "Focus session" : mode === "shortBreak" ? "Short break" : "Long break");
     if (mode === "focus") {
       const next = completedSessions + 1;
       setCompletedSessions(next);
