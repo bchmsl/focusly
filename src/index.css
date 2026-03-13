@@ -5,8 +5,12 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --radius: 0.75rem;
+  }
+
   /* ── Coral (default) ── */
-  :root, .theme-coral {
+  :root:not([class*="theme-"]), .theme-coral {
     --background: 350 30% 97%;
     --foreground: 350 25% 15%;
     --card: 350 20% 99%;
