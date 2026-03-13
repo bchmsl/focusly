@@ -207,24 +207,24 @@
 
   /* ── Ember ── */
   .theme-ember {
-    --background: 30 20% 97%;
-    --foreground: 20 25% 15%;
-    --card: 30 20% 100%;
-    --card-foreground: 20 25% 15%;
-    --popover: 30 20% 100%;
-    --popover-foreground: 20 25% 15%;
+    --background: 28 35% 96%;
+    --foreground: 20 28% 13%;
+    --card: 28 30% 98%;
+    --card-foreground: 20 28% 13%;
+    --popover: 28 30% 98%;
+    --popover-foreground: 20 28% 13%;
     --primary: 25 95% 53%;
     --primary-foreground: 0 0% 100%;
     --secondary: 43 96% 56%;
     --secondary-foreground: 20 25% 15%;
-    --muted: 30 12% 94%;
-    --muted-foreground: 20 10% 44%;
-    --accent: 30 12% 89%;
-    --accent-foreground: 20 25% 15%;
+    --muted: 28 22% 91%;
+    --muted-foreground: 20 14% 41%;
+    --accent: 28 22% 87%;
+    --accent-foreground: 20 28% 13%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 30 12% 88%;
-    --input: 30 12% 88%;
+    --border: 28 20% 86%;
+    --input: 28 20% 86%;
     --ring: 25 95% 53%;
     --radius: 0.75rem;
   }
