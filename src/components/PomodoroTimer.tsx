@@ -46,7 +46,7 @@ const PomodoroTimer = ({ onTimerEnd }: PomodoroTimerProps) => {
 
   const durations = getDurations();
   const totalTime = durations[mode];
-  const progress = ((totalTime - timeLeft) / totalTime) * 100;
+  const progress = Math.max(0, Math.min(100, ((totalTime - timeLeft) / totalTime) * 100));
 
   const clearTimer = useCallback(() => {
     if (intervalRef.current) {
