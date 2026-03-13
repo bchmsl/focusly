@@ -228,7 +228,7 @@
     --ring: 25 95% 53%;
   }
 
-  html.theme-ember.dark {
+  [data-theme="ember"].dark {
     --background: 20 22% 9%;
     --foreground: 30 18% 90%;
     --card: 20 20% 13%;
