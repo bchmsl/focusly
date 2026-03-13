@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import { Plus, X, Check, ChevronUp, ChevronDown, ChevronRight, Edit2 } from "lucide-react";
+import { Plus, X, Check, ChevronRight, Edit2, GripVertical } from "lucide-react";
+import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -35,8 +36,9 @@ const TodoList = () => {
 
   useEffect(() => { loadTasks(); }, [loadTasks]);
 
+  const getSubtasks = (parentId: string) =>
+    tasks.filter((t) => t.parent_id === parentId).sort((a, b) => a.position - b.position);
   const topLevel = tasks.filter((t) => !t.parent_id);
-  const getSubtasks = (parentId: string) => tasks.filter((t) => t.parent_id === parentId);
 
   const addTask = async (parentId: string | null = null, text?: string) => {
     const value = (text ?? input).trim();
@@ -62,7 +64,6 @@ const TodoList = () => {
     const task = tasks.find((t) => t.id === id);
     if (!task) return;
     const newDone = !task.done;
-    // Also toggle all subtasks
     const subtaskIds = getSubtasks(id).map((s) => s.id);
     setTasks((prev) =>
       prev.map((t) =>
@@ -80,27 +81,38 @@ const TodoList = () => {
     await supabase.from("tasks").delete().eq("id", id);
   };
 
-  const moveTask = async (id: string, direction: "up" | "down") => {
-    const task = tasks.find((t) => t.id === id);
-    if (!task) return;
-    const siblings = tasks.filter((t) => t.parent_id === task.parent_id).sort((a, b) => a.position - b.position);
-    const idx = siblings.findIndex((t) => t.id === id);
-    const swapIdx = direction === "up" ? idx - 1 : idx + 1;
-    if (swapIdx < 0 || swapIdx >= siblings.length) return;
+  const reorder = async (list: Task[], startIndex: number, endIndex: number) => {
+    const result = [...list];
+    const [removed] = result.splice(startIndex, 1);
+    result.splice(endIndex, 0, removed);
+    const updated = result.map((t, i) => ({ ...t, position: i }));
 
-    const a = siblings[idx];
-    const b = siblings[swapIdx];
-    setTasks((prev) =>
-      prev.map((t) => {
-        if (t.id === a.id) return { ...t, position: b.position };
-        if (t.id === b.id) return { ...t, position: a.position };
-        return t;
-      })
+    setTasks((prev) => {
+      const ids = new Set(updated.map((u) => u.id));
+      return [...prev.filter((t) => !ids.has(t.id)), ...updated];
+    });
+
+    await Promise.all(
+      updated
+        .filter((t, i) => list[i]?.id !== t.id)
+        .map((t) => supabase.from("tasks").update({ position: t.position }).eq("id", t.id))
     );
-    await Promise.all([
-      supabase.from("tasks").update({ position: b.position }).eq("id", a.id),
-      supabase.from("tasks").update({ position: a.position }).eq("id", b.id),
-    ]);
+  };
+
+  const onDragEnd = (result: DropResult) => {
+    if (!result.destination) return;
+    const { source, destination } = result;
+    if (source.index === destination.index && source.droppableId === destination.droppableId) return;
+    const droppableId = source.droppableId;
+
+    if (droppableId === "pending") {
+      const pending = topLevel.filter((t) => !t.done).sort((a, b) => a.position - b.position);
+      reorder(pending, source.index, destination.index);
+    } else if (droppableId.startsWith("subtasks-")) {
+      const parentId = droppableId.replace("subtasks-", "");
+      const subs = getSubtasks(parentId);
+      reorder(subs, source.index, destination.index);
+    }
   };
 
   const startEdit = (task: Task) => {
@@ -123,14 +135,7 @@ const TodoList = () => {
 
   const cancelEdit = () => setEditingId(null);
 
-  // Check if parent should auto-complete (all subtasks done)
-  const getParentDoneState = (parentId: string) => {
-    const subs = getSubtasks(parentId);
-    if (subs.length === 0) return null;
-    return subs.every((s) => s.done);
-  };
-
-  const renderTask = (task: Task, isSortable: boolean, isSubtask = false) => {
+  const renderTaskContent = (task: Task, isSubtask: boolean, dragHandleProps?: any) => {
     const isExpanded = expandedId === task.id;
     const isEditing = editingId === task.id;
     const hasDetails = task.subtitle || task.body;
@@ -139,18 +144,12 @@ const TodoList = () => {
     const hasExpandable = hasDetails || isEditing || hasSubtasks || !isSubtask;
 
     return (
-      <div key={task.id} className={`rounded-lg border border-transparent transition-colors hover:border-border/50 hover:bg-muted/30 ${isSubtask ? "ml-6" : ""}`}>
+      <div className="rounded-lg border border-transparent transition-colors hover:border-border/50 hover:bg-muted/30">
         <div className="group flex items-center gap-2 px-3 py-2.5">
-          {isSortable && (
-            <div className="flex flex-col -my-1">
-              <button onClick={() => moveTask(task.id, "up")} className="p-0.5 text-muted-foreground/40 hover:text-foreground transition-colors" aria-label="Move up">
-                <ChevronUp className="h-3 w-3" />
-              </button>
-              <button onClick={() => moveTask(task.id, "down")} className="p-0.5 text-muted-foreground/40 hover:text-foreground transition-colors" aria-label="Move down">
-                <ChevronDown className="h-3 w-3" />
-              </button>
-            </div>
-          )}
+          {/* Drag handle */}
+          <div {...dragHandleProps} className="cursor-grab active:cursor-grabbing p-0.5 text-muted-foreground/30 hover:text-muted-foreground transition-colors">
+            <GripVertical className="h-4 w-4" />
+          </div>
 
           <button
             onClick={() => toggleTask(task.id)}
@@ -187,7 +186,7 @@ const TodoList = () => {
         </div>
 
         {isExpanded && (
-          <div className="px-3 pb-3 pl-12 space-y-2">
+          <div className="px-3 pb-3 pl-14 space-y-2">
             {isEditing ? (
               <>
                 <input value={editForm.text} onChange={(e) => setEditForm((f) => ({ ...f, text: e.target.value }))} placeholder="Title" className="w-full rounded-md border bg-card px-3 py-1.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20" />
@@ -205,8 +204,29 @@ const TodoList = () => {
               </>
             )}
 
-            {/* Subtasks */}
-            {subtasks.sort((a, b) => a.position - b.position).map((sub) => renderTask(sub, true, true))}
+            {/* Subtasks with drag-drop */}
+            {!isSubtask && (
+              <Droppable droppableId={`subtasks-${task.id}`}>
+                {(provided) => (
+                  <div ref={provided.innerRef} {...provided.droppableProps} className="space-y-1">
+                    {subtasks.map((sub, index) => (
+                      <Draggable key={sub.id} draggableId={sub.id} index={index}>
+                        {(provided, snapshot) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            className={snapshot.isDragging ? "opacity-80" : ""}
+                          >
+                            {renderTaskContent(sub, true, provided.dragHandleProps)}
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            )}
 
             {/* Add subtask */}
             {!isSubtask && (
@@ -251,20 +271,45 @@ const TodoList = () => {
         </button>
       </form>
 
-      <div className="flex flex-col gap-1">
-        {pendingTop.length === 0 && completedTop.length === 0 && (
-          <p className="py-8 text-center text-sm text-muted-foreground">No tasks yet. Add one above to get started.</p>
-        )}
-        {pendingTop.map((task) => renderTask(task, true))}
-        {completedTop.length > 0 && (
-          <>
-            <div className="mt-3 mb-1 px-3">
-              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Completed ({completedTop.length})</span>
-            </div>
-            {completedTop.map((task) => renderTask(task, false))}
-          </>
-        )}
-      </div>
+      <DragDropContext onDragEnd={onDragEnd}>
+        <div className="flex flex-col gap-1">
+          {pendingTop.length === 0 && completedTop.length === 0 && (
+            <p className="py-8 text-center text-sm text-muted-foreground">No tasks yet. Add one above to get started.</p>
+          )}
+
+          <Droppable droppableId="pending">
+            {(provided) => (
+              <div ref={provided.innerRef} {...provided.droppableProps} className="flex flex-col gap-1">
+                {pendingTop.map((task, index) => (
+                  <Draggable key={task.id} draggableId={task.id} index={index}>
+                    {(provided, snapshot) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        className={snapshot.isDragging ? "opacity-80" : ""}
+                      >
+                        {renderTaskContent(task, false, provided.dragHandleProps)}
+                      </div>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
+
+          {completedTop.length > 0 && (
+            <>
+              <div className="mt-3 mb-1 px-3">
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Completed ({completedTop.length})</span>
+              </div>
+              {completedTop.map((task) => (
+                <div key={task.id}>{renderTaskContent(task, false)}</div>
+              ))}
+            </>
+          )}
+        </div>
+      </DragDropContext>
     </div>
   );
 };
