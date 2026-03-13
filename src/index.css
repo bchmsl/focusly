@@ -138,7 +138,7 @@
     --ring: 142 71% 45%;
   }
 
-  .theme-forest.dark {
+  html.theme-forest.dark {
     --background: 150 20% 8%;
     --foreground: 138 16% 90%;
     --card: 150 18% 12%;
