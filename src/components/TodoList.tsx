@@ -39,6 +39,7 @@ const TodoList = () => {
   const [editingSubtaskId, setEditingSubtaskId] = useState<string | null>(null);
   const [editingSubtaskText, setEditingSubtaskText] = useState("");
   const [activeFilterTag, setActiveFilterTag] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [showTagCreator, setShowTagCreator] = useState<string | null>(null); // taskId
   const [newTagName, setNewTagName] = useState("");
   const [newTagColor, setNewTagColor] = useState(TAG_COLORS[0]);
