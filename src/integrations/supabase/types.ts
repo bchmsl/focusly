@@ -94,6 +94,51 @@ export type Database = {
         }
         Relationships: []
       }
+      user_settings: {
+        Row: {
+          auto_start_breaks: boolean
+          auto_start_focus: boolean
+          created_at: string
+          focus_duration: number
+          id: string
+          long_break_duration: number
+          long_break_interval: number
+          short_break_duration: number
+          sound_enabled: boolean
+          sound_volume: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auto_start_breaks?: boolean
+          auto_start_focus?: boolean
+          created_at?: string
+          focus_duration?: number
+          id?: string
+          long_break_duration?: number
+          long_break_interval?: number
+          short_break_duration?: number
+          sound_enabled?: boolean
+          sound_volume?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auto_start_breaks?: boolean
+          auto_start_focus?: boolean
+          created_at?: string
+          focus_duration?: number
+          id?: string
+          long_break_duration?: number
+          long_break_interval?: number
+          short_break_duration?: number
+          sound_enabled?: boolean
+          sound_volume?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

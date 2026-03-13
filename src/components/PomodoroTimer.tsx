@@ -2,14 +2,9 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { Play, Pause, SkipForward, RotateCcw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSettings } from "@/contexts/SettingsContext";
 
 type TimerMode = "focus" | "shortBreak" | "longBreak";
-
-const DURATIONS: Record<TimerMode, number> = {
-  focus: 25 * 60,
-  shortBreak: 5 * 60,
-  longBreak: 15 * 60,
-};
 
 const MODE_LABELS: Record<TimerMode, string> = {
   focus: "Focus",
@@ -17,19 +12,27 @@ const MODE_LABELS: Record<TimerMode, string> = {
   longBreak: "Long Break",
 };
 
-const TOTAL_FOCUS_SESSIONS = 4;
-
 const PomodoroTimer = () => {
   const { user } = useAuth();
+  const { settings, loaded: settingsLoaded } = useSettings();
+
+  const getDurations = useCallback((): Record<TimerMode, number> => ({
+    focus: settings.focusDuration * 60,
+    shortBreak: settings.shortBreakDuration * 60,
+    longBreak: settings.longBreakDuration * 60,
+  }), [settings.focusDuration, settings.shortBreakDuration, settings.longBreakDuration]);
+
   const [mode, setMode] = useState<TimerMode>("focus");
-  const [timeLeft, setTimeLeft] = useState(DURATIONS.focus);
+  const [timeLeft, setTimeLeft] = useState(25 * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [completedSessions, setCompletedSessions] = useState(0);
   const [loaded, setLoaded] = useState(false);
   const intervalRef = useRef<number | null>(null);
   const saveTimeoutRef = useRef<number | null>(null);
+  const autoStartRef = useRef(false);
 
-  const totalTime = DURATIONS[mode];
+  const durations = getDurations();
+  const totalTime = durations[mode];
   const progress = ((totalTime - timeLeft) / totalTime) * 100;
 
   const clearTimer = useCallback(() => {
@@ -39,9 +42,32 @@ const PomodoroTimer = () => {
     }
   }, []);
 
+  // Play notification sound
+  const playSound = useCallback(() => {
+    if (!settings.soundEnabled) return;
+    try {
+      const ctx = new AudioContext();
+      const vol = ctx.createGain();
+      vol.gain.value = settings.soundVolume / 100;
+      vol.connect(ctx.destination);
+
+      // Two-tone chime
+      [440, 660].forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        osc.type = "sine";
+        osc.frequency.value = freq;
+        osc.connect(vol);
+        osc.start(ctx.currentTime + i * 0.25);
+        osc.stop(ctx.currentTime + i * 0.25 + 0.2);
+      });
+    } catch {
+      // AudioContext may not be available
+    }
+  }, [settings.soundEnabled, settings.soundVolume]);
+
   // Load timer state from DB
   useEffect(() => {
-    if (!user) return;
+    if (!user || !settingsLoaded) return;
     const load = async () => {
       const { data } = await supabase
         .from("timer_state")
@@ -49,25 +75,25 @@ const PomodoroTimer = () => {
         .eq("user_id", user.id)
         .maybeSingle();
 
+      const d = getDurations();
       if (data) {
         const m = data.mode as TimerMode;
         let tl = data.time_left;
-
-        // If timer was running, subtract elapsed time
         if (data.is_running && data.last_tick_at) {
           const elapsed = Math.floor((Date.now() - new Date(data.last_tick_at).getTime()) / 1000);
           tl = Math.max(0, tl - elapsed);
         }
-
         setMode(m);
         setTimeLeft(tl);
         setIsRunning(data.is_running && tl > 0);
         setCompletedSessions(data.completed_sessions);
+      } else {
+        setTimeLeft(d.focus);
       }
       setLoaded(true);
     };
     load();
-  }, [user]);
+  }, [user, settingsLoaded, getDurations]);
 
   // Save timer state (debounced)
   const saveState = useCallback(
@@ -77,48 +103,48 @@ const PomodoroTimer = () => {
       saveTimeoutRef.current = window.setTimeout(async () => {
         await supabase
           .from("timer_state")
-          .upsert(
-            {
-              user_id: user.id,
-              mode: m,
-              time_left: tl,
-              is_running: running,
-              completed_sessions: sessions,
-              last_tick_at: running ? new Date().toISOString() : null,
-            },
-            { onConflict: "user_id" }
-          );
+          .upsert({
+            user_id: user.id,
+            mode: m,
+            time_left: tl,
+            is_running: running,
+            completed_sessions: sessions,
+            last_tick_at: running ? new Date().toISOString() : null,
+          }, { onConflict: "user_id" });
       }, 500);
     },
     [user]
   );
 
   const switchMode = useCallback(
-    (newMode: TimerMode, sessions?: number) => {
+    (newMode: TimerMode, sessions?: number, autoStart?: boolean) => {
       clearTimer();
       const s = sessions ?? completedSessions;
+      const d = getDurations();
       setMode(newMode);
-      setTimeLeft(DURATIONS[newMode]);
-      setIsRunning(false);
-      saveState(newMode, DURATIONS[newMode], false, s);
+      setTimeLeft(d[newMode]);
+      const shouldAutoStart = autoStart ?? false;
+      setIsRunning(shouldAutoStart);
+      saveState(newMode, d[newMode], shouldAutoStart, s);
     },
-    [clearTimer, completedSessions, saveState]
+    [clearTimer, completedSessions, saveState, getDurations]
   );
 
   const handleSkip = useCallback(() => {
+    playSound();
     if (mode === "focus") {
       const next = completedSessions + 1;
       setCompletedSessions(next);
-      if (next >= TOTAL_FOCUS_SESSIONS) {
-        switchMode("longBreak", 0);
+      if (next >= settings.longBreakInterval) {
+        switchMode("longBreak", 0, settings.autoStartBreaks);
         setCompletedSessions(0);
       } else {
-        switchMode("shortBreak", next);
+        switchMode("shortBreak", next, settings.autoStartBreaks);
       }
     } else {
-      switchMode("focus");
+      switchMode("focus", undefined, settings.autoStartFocus);
     }
-  }, [mode, completedSessions, switchMode]);
+  }, [mode, completedSessions, switchMode, settings.longBreakInterval, settings.autoStartBreaks, settings.autoStartFocus, playSound]);
 
   useEffect(() => {
     if (!loaded) return;
@@ -128,6 +154,7 @@ const PomodoroTimer = () => {
           if (prev <= 1) {
             clearTimer();
             setIsRunning(false);
+            autoStartRef.current = true;
             setTimeout(() => handleSkip(), 300);
             return 0;
           }
@@ -140,7 +167,25 @@ const PomodoroTimer = () => {
     return clearTimer;
   }, [isRunning, clearTimer, handleSkip, loaded]);
 
-  // Save on play/pause
+  // Update duration when settings change (only if timer hasn't started)
+  useEffect(() => {
+    if (!loaded) return;
+    const d = getDurations();
+    if (!isRunning && timeLeft === durations[mode]) {
+      // Timer is at full — update to new duration
+    }
+    // If not running and at default, update
+    if (!isRunning) {
+      const currentDuration = d[mode];
+      // Only update if timer hasn't been manually changed
+      setTimeLeft((prev) => {
+        const oldDuration = durations[mode];
+        if (prev === oldDuration || prev > currentDuration) return currentDuration;
+        return prev;
+      });
+    }
+  }, [settings.focusDuration, settings.shortBreakDuration, settings.longBreakDuration]);
+
   const toggleRunning = () => {
     const next = !isRunning;
     setIsRunning(next);
@@ -149,9 +194,10 @@ const PomodoroTimer = () => {
 
   const handleReset = () => {
     clearTimer();
-    setTimeLeft(DURATIONS[mode]);
+    const d = getDurations();
+    setTimeLeft(d[mode]);
     setIsRunning(false);
-    saveState(mode, DURATIONS[mode], false, completedSessions);
+    saveState(mode, d[mode], false, completedSessions);
   };
 
   const minutes = Math.floor(timeLeft / 60);
@@ -162,7 +208,7 @@ const PomodoroTimer = () => {
     <div className="flex flex-col items-center gap-8">
       {/* Mode tabs */}
       <div className="flex gap-1 rounded-lg bg-muted p-1">
-        {(Object.keys(DURATIONS) as TimerMode[]).map((m) => (
+        {(["focus", "shortBreak", "longBreak"] as TimerMode[]).map((m) => (
           <button
             key={m}
             onClick={() => switchMode(m)}
@@ -204,7 +250,7 @@ const PomodoroTimer = () => {
 
       {/* Session dots */}
       <div className="flex gap-2">
-        {Array.from({ length: TOTAL_FOCUS_SESSIONS }).map((_, i) => (
+        {Array.from({ length: settings.longBreakInterval }).map((_, i) => (
           <div
             key={i}
             className={`h-2.5 w-2.5 rounded-full transition-colors ${
