@@ -196,7 +196,7 @@ const PomodoroTimer = ({ onTimerEnd }: PomodoroTimerProps) => {
     return clearTimer;
   }, [isRunning, clearTimer, handleTimerComplete, loaded]);
 
-  // Update duration when settings change (only if timer isn't running)
+  // Update duration when settings change
   const prevFocusDur = useRef(settings.focusDuration);
   const prevShortDur = useRef(settings.shortBreakDuration);
   const prevLongDur = useRef(settings.longBreakDuration);
