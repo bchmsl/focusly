@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import PomodoroTimer from "@/components/PomodoroTimer";
 import TodoList from "@/components/TodoList";
 import { Timer, LogOut, Bell, BellOff } from "lucide-react";
@@ -11,6 +11,7 @@ import { usePushNotifications } from "@/hooks/usePushNotifications";
 const Index = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const [tagVersion, setTagVersion] = useState(0);
   const { permission, subscribed, subscribe, sendNotification, isSupported } = usePushNotifications();
 
   const handleSignOut = async () => {
@@ -57,7 +58,7 @@ const Index = () => {
               )
             )}
 
-            <SettingsPanel />
+            <SettingsPanel onTagsChanged={() => setTagVersion((v) => v + 1)} />
             <ThemeToggle />
             <button
               onClick={handleSignOut}
@@ -80,7 +81,7 @@ const Index = () => {
           <div className="flex flex-col">
             <div className="w-full rounded-2xl border bg-card p-6 shadow-sm">
               <h2 className="mb-4 text-base font-semibold">Tasks</h2>
-              <TodoList />
+              <TodoList key={tagVersion} />
             </div>
           </div>
         </div>
