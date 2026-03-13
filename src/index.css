@@ -183,7 +183,7 @@
     --ring: 263 70% 71%;
   }
 
-  html.theme-lavender.dark {
+  [data-theme="lavender"].dark {
     --background: 270 22% 9%;
     --foreground: 270 15% 90%;
     --card: 270 20% 13%;
