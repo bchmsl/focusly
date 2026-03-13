@@ -194,17 +194,13 @@ const PomodoroTimer = ({ onTimerEnd }: PomodoroTimerProps) => {
     prevDurationsRef.current = newDurations;
 
     if (!prev) return;
-    if (isRunning) return; // Don't change while running
+    if (isRunning) return;
 
-    const oldDurationForMode = prev[mode];
     const newDurationForMode = newDurations[mode];
-
-    // Only auto-update if the timer is at the old full duration (hasn't been partially used)
-    setTimeLeft((current) => {
-      if (current === oldDurationForMode) return newDurationForMode;
-      return current;
-    });
-  }, [settings.focusDuration, settings.shortBreakDuration, settings.longBreakDuration, loaded, isRunning, mode, getDurations]);
+    // Always reset to full when duration changes and timer isn't running
+    setTimeLeft(newDurationForMode);
+    saveState(mode, newDurationForMode, false, completedSessions);
+  }, [settings.focusDuration, settings.shortBreakDuration, settings.longBreakDuration, loaded, isRunning, mode, getDurations, saveState, completedSessions]);
 
   const toggleRunning = () => {
     const next = !isRunning;
