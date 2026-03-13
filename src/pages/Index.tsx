@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import PomodoroTimer from "@/components/PomodoroTimer";
 import TodoList from "@/components/TodoList";
-import { Timer, LogOut, Bell, BellOff } from "lucide-react";
+import { RefreshCw, LogOut, Bell, BellOff } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import SettingsPanel from "@/components/SettingsPanel";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,6 +11,7 @@ import { usePushNotifications } from "@/hooks/usePushNotifications";
 const Index = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const [spinning, setSpinning] = useState(false);
   const [tagVersion, setTagVersion] = useState(0);
   const { permission, subscribed, subscribe, sendNotification, isSupported } = usePushNotifications();
 
@@ -36,7 +37,16 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <header className="border-b px-6 py-4">
         <div className="mx-auto flex max-w-5xl items-center gap-2">
-          <Timer className="h-5 w-5 text-primary" />
+          <button
+            onClick={() => {
+              setSpinning(true);
+              window.location.reload();
+            }}
+            className="p-1 text-primary hover:text-primary/80 transition-colors"
+            title="Refresh"
+          >
+            <RefreshCw className={`h-5 w-5 ${spinning ? "animate-spin" : ""}`} />
+          </button>
           <h1 className="text-lg font-semibold">Focusly</h1>
           <div className="ml-auto flex items-center gap-3">
             <span className="text-sm text-muted-foreground hidden sm:inline">{user?.email}</span>
