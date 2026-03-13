@@ -20,6 +20,7 @@ export type Database = {
           created_at: string
           done: boolean
           id: string
+          parent_id: string | null
           position: number
           subtitle: string | null
           text: string
@@ -31,6 +32,7 @@ export type Database = {
           created_at?: string
           done?: boolean
           id?: string
+          parent_id?: string | null
           position?: number
           subtitle?: string | null
           text: string
@@ -42,13 +44,22 @@ export type Database = {
           created_at?: string
           done?: boolean
           id?: string
+          parent_id?: string | null
           position?: number
           subtitle?: string | null
           text?: string
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "tasks_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       timer_state: {
         Row: {
