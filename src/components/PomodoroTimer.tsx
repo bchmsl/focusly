@@ -4,6 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSettings } from "@/contexts/SettingsContext";
 
+interface PomodoroTimerProps {
+  onTimerEnd?: (mode: string) => void;
+}
+
 type TimerMode = "focus" | "shortBreak" | "longBreak";
 
 const MODE_LABELS: Record<TimerMode, string> = {
