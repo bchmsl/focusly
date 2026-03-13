@@ -514,7 +514,6 @@ const TodoList = () => {
               style={{
                 backgroundColor: tag.color + (activeFilterTag === tag.id ? "30" : "15"),
                 color: tag.color,
-                ringColor: tag.color,
               }}
             >
               {tag.emoji && <span className="mr-0.5">{tag.emoji}</span>}
