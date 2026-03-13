@@ -178,6 +178,82 @@ const SettingsPanel = ({ onTagsChanged }: { onTagsChanged?: () => void }) => {
                 />
               )}
             </section>
+
+            {/* Tags */}
+            {tags.length > 0 && (
+              <section className="space-y-4">
+                <div className="flex items-center gap-2 text-sm font-medium">
+                  <Tag className="h-4 w-4 text-primary" />
+                  Tags
+                </div>
+
+                <div className="space-y-1.5">
+                  {tags.map((tag) => (
+                    <div key={tag.id}>
+                      {editingTagId === tag.id ? (
+                        <div className="space-y-2 rounded-lg border bg-background p-3">
+                          <div className="flex gap-1.5">
+                            <input
+                              value={editForm.emoji}
+                              onChange={(e) => setEditForm((f) => ({ ...f, emoji: e.target.value }))}
+                              placeholder="😊"
+                              className="w-10 rounded border bg-card px-1.5 py-1 text-center text-xs focus:outline-none focus:ring-2 focus:ring-ring/20"
+                              maxLength={2}
+                            />
+                            <input
+                              autoFocus
+                              value={editForm.name}
+                              onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
+                              onKeyDown={(e) => { if (e.key === "Enter") saveTagEdit(); if (e.key === "Escape") setEditingTagId(null); }}
+                              className="flex-1 rounded border bg-card px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-ring/20"
+                            />
+                          </div>
+                          <div className="flex items-center gap-1">
+                            {TAG_COLORS.map((c) => (
+                              <button
+                                key={c}
+                                onClick={() => setEditForm((f) => ({ ...f, color: c }))}
+                                className={`h-4 w-4 rounded-full transition-transform ${editForm.color === c ? "scale-125 ring-2 ring-offset-1 ring-offset-background" : "hover:scale-110"}`}
+                                style={{ backgroundColor: c }}
+                              />
+                            ))}
+                          </div>
+                          <div className="flex gap-1.5">
+                            <button onClick={saveTagEdit} className="rounded bg-primary/10 px-2.5 py-1 text-[10px] font-medium text-primary hover:bg-primary/20 transition-colors">Save</button>
+                            <button onClick={() => setEditingTagId(null)} className="rounded px-2.5 py-1 text-[10px] text-muted-foreground hover:bg-muted transition-colors">Cancel</button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="group flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-muted/50 transition-colors">
+                          <span
+                            className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium"
+                            style={{ backgroundColor: tag.color + "20", color: tag.color }}
+                          >
+                            {tag.emoji && <span>{tag.emoji}</span>}
+                            {tag.name}
+                          </span>
+                          <div className="ml-auto flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onClick={() => startEditTag(tag)} className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                              <Pencil className="h-3 w-3" />
+                            </button>
+                            {confirmDeleteId === tag.id ? (
+                              <div className="flex items-center gap-1">
+                                <button onClick={() => deleteTag(tag.id)} className="px-1.5 py-0.5 rounded text-[10px] font-medium text-destructive hover:bg-destructive/10 transition-colors">Delete</button>
+                                <button onClick={() => setConfirmDeleteId(null)} className="px-1.5 py-0.5 rounded text-[10px] text-muted-foreground hover:bg-muted transition-colors">No</button>
+                              </div>
+                            ) : (
+                              <button onClick={() => setConfirmDeleteId(tag.id)} className="p-1 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors">
+                                <Trash2 className="h-3 w-3" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
           </div>
         </div>
       </div>
