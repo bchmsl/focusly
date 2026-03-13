@@ -161,7 +161,7 @@
   }
 
   /* ── Lavender ── */
-  html.theme-lavender {
+  [data-theme="lavender"] {
     --background: 268 32% 96%;
     --foreground: 270 28% 16%;
     --card: 268 28% 98%;
