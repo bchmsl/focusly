@@ -16,25 +16,34 @@ export type Database = {
     Tables: {
       tasks: {
         Row: {
+          body: string | null
           created_at: string
           done: boolean
           id: string
+          position: number
+          subtitle: string | null
           text: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          body?: string | null
           created_at?: string
           done?: boolean
           id?: string
+          position?: number
+          subtitle?: string | null
           text: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          body?: string | null
           created_at?: string
           done?: boolean
           id?: string
+          position?: number
+          subtitle?: string | null
           text?: string
           updated_at?: string
           user_id?: string
