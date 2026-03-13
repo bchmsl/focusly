@@ -1,6 +1,7 @@
 import PomodoroTimer from "@/components/PomodoroTimer";
 import TodoList from "@/components/TodoList";
 import { Timer, LogOut } from "lucide-react";
+import ThemeToggle from "@/components/ThemeToggle";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 
