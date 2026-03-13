@@ -39,6 +39,7 @@ const TodoList = () => {
   const [editingSubtaskId, setEditingSubtaskId] = useState<string | null>(null);
   const [editingSubtaskText, setEditingSubtaskText] = useState("");
   const [activeFilterTag, setActiveFilterTag] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [showTagCreator, setShowTagCreator] = useState<string | null>(null); // taskId
   const [newTagName, setNewTagName] = useState("");
   const [newTagColor, setNewTagColor] = useState(TAG_COLORS[0]);
@@ -400,9 +401,22 @@ const TodoList = () => {
           <button onClick={() => isEditing ? saveEdit() : startEdit(task)} className={`flex h-7 w-7 items-center justify-center rounded-md transition-all ${isEditing ? "bg-primary/10 text-primary" : "text-transparent group-hover:text-muted-foreground hover:!text-primary hover:!bg-primary/5"}`} aria-label={isEditing ? "Save" : "Edit"}>
             {isEditing ? <Check className="h-3.5 w-3.5" /> : <Pencil className="h-3 w-3" />}
           </button>
-          <button onClick={() => removeTask(task.id)} className="flex h-7 w-7 items-center justify-center rounded-md text-transparent transition-all group-hover:text-muted-foreground/50 hover:!text-destructive hover:!bg-destructive/5" aria-label="Remove">
-            <X className="h-3.5 w-3.5" />
-          </button>
+          {isEditing ? (
+            <button onClick={() => cancelEdit()} className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-all hover:text-foreground hover:bg-muted" aria-label="Cancel editing">
+              <X className="h-3.5 w-3.5" />
+            </button>
+          ) : (
+            confirmDeleteId === task.id ? (
+              <div className="flex items-center gap-1 animate-in fade-in duration-100">
+                <button onClick={() => removeTask(task.id)} className="rounded-md px-2 py-1 text-[10px] font-medium text-destructive hover:bg-destructive/10 transition-colors">Delete</button>
+                <button onClick={() => setConfirmDeleteId(null)} className="rounded-md px-1.5 py-1 text-[10px] text-muted-foreground hover:bg-muted transition-colors">No</button>
+              </div>
+            ) : (
+              <button onClick={() => setConfirmDeleteId(task.id)} className="flex h-7 w-7 items-center justify-center rounded-md text-transparent transition-all group-hover:text-muted-foreground/50 hover:!text-destructive hover:!bg-destructive/5" aria-label="Remove">
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )
+          )}
         </div>
 
         {isExpanded && (
