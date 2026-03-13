@@ -36,9 +36,16 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <header className="border-b px-6 py-4">
         <div className="mx-auto flex max-w-5xl items-center gap-2">
-          <Timer className="h-5 w-5 text-primary" />
-          <h1 className="text-lg font-semibold">Focusly</h1>
-          <div className="ml-auto flex items-center gap-3">
+          <button
+            onClick={() => {
+              setSpinning(true);
+              window.location.reload();
+            }}
+            className="p-1 text-primary hover:text-primary/80 transition-colors"
+            title="Refresh"
+          >
+            <RefreshCw className={`h-5 w-5 ${spinning ? "animate-spin" : ""}`} />
+          </button>
             <span className="text-sm text-muted-foreground hidden sm:inline">{user?.email}</span>
 
             {/* Push notification toggle */}
