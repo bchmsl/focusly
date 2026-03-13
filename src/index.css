@@ -273,7 +273,7 @@
     --ring: 215 16% 47%;
   }
 
-  .theme-slate.dark {
+  html.theme-slate.dark {
     --background: 224 20% 9%;
     --foreground: 220 14% 90%;
     --card: 224 18% 13%;
