@@ -206,7 +206,7 @@
   }
 
   /* ── Ember ── */
-  html.theme-ember {
+  [data-theme="ember"] {
     --background: 28 35% 96%;
     --foreground: 20 28% 13%;
     --card: 28 30% 98%;
