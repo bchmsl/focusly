@@ -253,31 +253,6 @@ const TodoList = () => {
               </Droppable>
             )}
 
-            {/* Add subtask */}
-            {!isSubtask && (
-              subtaskInputId === task.id ? (
-                <form onSubmit={(e) => { e.preventDefault(); addSubtask(task.id); }} className="flex gap-2 mt-1">
-                  <input
-                    autoFocus
-                    value={subtaskInput}
-                    onChange={(e) => setSubtaskInput(e.target.value)}
-                    placeholder="Add subtask..."
-                    className="flex-1 rounded-md border bg-card px-3 py-1.5 text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20"
-                    onBlur={() => { if (!subtaskInput.trim()) setSubtaskInputId(null); }}
-                  />
-                  <button type="submit" className="rounded-md bg-primary px-2.5 py-1 text-xs text-primary-foreground hover:bg-primary/90 transition-colors">
-                    <Plus className="h-3 w-3" />
-                  </button>
-                </form>
-              ) : (
-                <button
-                  onClick={() => { setSubtaskInputId(task.id); setSubtaskInput(""); }}
-                  className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mt-1"
-                >
-                  <Plus className="h-3 w-3" /> Add subtask
-                </button>
-              )
-            )}
           </div>
         )}
       </div>
