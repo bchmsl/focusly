@@ -9,8 +9,8 @@
     --radius: 0.75rem;
   }
 
-  /* ── Coral (default) ── */
-  .theme-coral {
+  /* ── Coral (default + fallback) ── */
+  :root, .theme-coral {
     --background: 350 30% 97%;
     --foreground: 350 25% 15%;
     --card: 350 20% 99%;
