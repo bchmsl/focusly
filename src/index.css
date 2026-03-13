@@ -251,7 +251,7 @@
   }
 
   /* ── Slate ── */
-  .theme-slate {
+  html.theme-slate {
     --background: 220 20% 95%;
     --foreground: 224 22% 16%;
     --card: 220 16% 98%;
