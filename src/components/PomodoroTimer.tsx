@@ -38,7 +38,7 @@ const PomodoroTimer = ({ onTimerEnd }: PomodoroTimerProps) => {
   const modeRef = useRef(mode);
   const completedSessionsRef = useRef(completedSessions);
   const settingsRef = useRef(settings);
-  const prevDurationsRef = useRef<Record<TimerMode, number> | null>(null);
+  const loadedTimerStateForUserRef = useRef<string | null>(null);
 
   modeRef.current = mode;
   completedSessionsRef.current = completedSessions;
@@ -96,9 +96,13 @@ const PomodoroTimer = ({ onTimerEnd }: PomodoroTimerProps) => {
     [user]
   );
 
-  // Load timer state from DB
+  // Load timer state from DB (once per user) so settings updates don't get overwritten
   useEffect(() => {
     if (!user || !settingsLoaded) return;
+    if (loadedTimerStateForUserRef.current === user.id) return;
+
+    loadedTimerStateForUserRef.current = user.id;
+
     const load = async () => {
       const { data } = await supabase
         .from("timer_state")
@@ -106,7 +110,12 @@ const PomodoroTimer = ({ onTimerEnd }: PomodoroTimerProps) => {
         .eq("user_id", user.id)
         .maybeSingle();
 
-      const d = getDurations();
+      const d: Record<TimerMode, number> = {
+        focus: settings.focusDuration * 60,
+        shortBreak: settings.shortBreakDuration * 60,
+        longBreak: settings.longBreakDuration * 60,
+      };
+
       if (data) {
         const m = data.mode as TimerMode;
         let tl = data.time_left;
@@ -121,11 +130,12 @@ const PomodoroTimer = ({ onTimerEnd }: PomodoroTimerProps) => {
       } else {
         setTimeLeft(d.focus);
       }
-      prevDurationsRef.current = d;
+
       setLoaded(true);
     };
+
     load();
-  }, [user, settingsLoaded, getDurations]);
+  }, [user, settingsLoaded]);
 
   const switchMode = useCallback(
     (newMode: TimerMode, sessions?: number, autoStart?: boolean) => {
