@@ -15,7 +15,6 @@ const TAG_COLORS = [
   "#6366f1", "#ec4899", "#f59e0b", "#10b981", "#3b82f6",
   "#8b5cf6", "#ef4444", "#14b8a6", "#f97316", "#64748b",
 ];
-import { useSettings } from "@/contexts/SettingsContext";
 
 const SettingsPanel = () => {
   const { settings, updateSettings } = useSettings();
