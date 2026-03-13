@@ -304,7 +304,7 @@ const TodoList = () => {
                   key={c}
                   onClick={() => setNewTagColor(c)}
                   className={`h-4 w-4 rounded-full transition-transform ${newTagColor === c ? "scale-125 ring-2 ring-offset-1 ring-offset-background" : "hover:scale-110"}`}
-                  style={{ backgroundColor: c, ringColor: c }}
+                  style={{ backgroundColor: c, ...(newTagColor === c ? { outlineColor: c } : {}) }}
                 />
               ))}
             </div>
