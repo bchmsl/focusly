@@ -71,7 +71,7 @@
   }
 
   /* ── Ocean ── */
-  html.theme-ocean {
+  [data-theme="ocean"] {
     --background: 200 35% 96%;
     --foreground: 210 30% 14%;
     --card: 200 30% 98%;
