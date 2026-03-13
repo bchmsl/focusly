@@ -12,7 +12,7 @@ const Index = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [spinning, setSpinning] = useState(false);
-  const [tagVersion, setTagVersion] = useState(0);
+  const [contentKey, setContentKey] = useState(0);
   const { permission, subscribed, subscribe, sendNotification, isSupported } = usePushNotifications();
 
   const handleSignOut = async () => {
@@ -40,7 +40,8 @@ const Index = () => {
           <button
             onClick={() => {
               setSpinning(true);
-              window.location.reload();
+              setContentKey((k) => k + 1);
+              setTimeout(() => setSpinning(false), 600);
             }}
             className="p-1 text-primary hover:text-primary/80 transition-colors"
             title="Refresh"
@@ -68,7 +69,7 @@ const Index = () => {
               )
             )}
 
-            <SettingsPanel onTagsChanged={() => setTagVersion((v) => v + 1)} />
+            <SettingsPanel onTagsChanged={() => setContentKey((v) => v + 1)} />
             <ThemeToggle />
             <button
               onClick={handleSignOut}
@@ -85,13 +86,13 @@ const Index = () => {
         <div className="grid gap-10 lg:grid-cols-2 lg:gap-16">
           <div className="flex flex-col items-center">
             <div className="w-full rounded-2xl border bg-card p-8 shadow-sm">
-              <PomodoroTimer onTimerEnd={handleTimerEnd} />
+              <PomodoroTimer key={contentKey} onTimerEnd={handleTimerEnd} />
             </div>
           </div>
           <div className="flex flex-col">
             <div className="w-full rounded-2xl border bg-card p-6 shadow-sm">
               <h2 className="mb-4 text-base font-semibold">Tasks</h2>
-              <TodoList key={tagVersion} />
+              <TodoList key={contentKey} />
             </div>
           </div>
         </div>
