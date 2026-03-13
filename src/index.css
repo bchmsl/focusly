@@ -116,7 +116,7 @@
   }
 
   /* ── Forest ── */
-  .theme-forest {
+  html.theme-forest {
     --background: 140 30% 96%;
     --foreground: 150 30% 12%;
     --card: 140 25% 98%;
