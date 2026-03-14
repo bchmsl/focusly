@@ -158,3 +158,12 @@ Run `npm run build` and deploy the generated `dist/` folder to any static hostin
 1. Fork the repository and create a feature branch
 2. Make your changes and ensure all tests pass (`npm run test`)
 3. Open a pull request describing your changes
+
+---
+
+## License
+
+This project is dual-licensed under either of the following, at your option:
+
+- [MIT License](LICENSE-MIT)
+- [Apache License, Version 2.0](LICENSE-APACHE)
