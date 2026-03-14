@@ -15,40 +15,43 @@ const Index = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [spinning, setSpinning] = useState(false);
-  const [contentKey, setContentKey] = useState(0);
   const { permission, subscribed, subscribe, sendNotification, isSupported } = usePushNotifications();
   const { reload: reloadSettings } = useSettings();
   const { reload: reloadTheme } = useTheme();
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const todoReloadRef = useRef<(() => void) | null>(null);
+  const timerReloadRef = useRef<(() => void) | null>(null);
+
+  const reloadAll = useCallback(async () => {
+    await Promise.all([reloadSettings(), reloadTheme()]);
+    todoReloadRef.current?.();
+    timerReloadRef.current?.();
+  }, [reloadSettings, reloadTheme]);
 
   // Realtime sync: listen to all user-relevant table changes
   useEffect(() => {
     if (!user) return;
 
-    const debouncedRefresh = (reloadFns: (() => Promise<void>)[]) => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(() => {
-        reloadFns.forEach(fn => fn());
-      }, 300);
-    };
-
     const channel = supabase
       .channel('realtime-sync')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, () => {
-        setContentKey(k => k + 1);
+        todoReloadRef.current?.();
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'task_tags' }, () => {
-        setContentKey(k => k + 1);
+        todoReloadRef.current?.();
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'tags' }, () => {
-        setContentKey(k => k + 1);
+        todoReloadRef.current?.();
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'timer_state' }, () => {
-        setContentKey(k => k + 1);
+        timerReloadRef.current?.();
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'user_settings' }, () => {
-        debouncedRefresh([reloadSettings, reloadTheme]);
-        setContentKey(k => k + 1);
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+        debounceRef.current = setTimeout(() => {
+          reloadSettings();
+          reloadTheme();
+        }, 300);
       })
       .subscribe();
 
