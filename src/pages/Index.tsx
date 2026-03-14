@@ -86,8 +86,7 @@ const Index = () => {
           <button
             onClick={async () => {
               setSpinning(true);
-              setContentKey((k) => k + 1);
-              await Promise.all([reloadSettings(), reloadTheme()]);
+              await reloadAll();
               setSpinning(false);
             }}
             className="p-1 text-primary hover:text-primary/80 transition-colors"
