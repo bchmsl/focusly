@@ -35,6 +35,7 @@ const SettingsContext = createContext<SettingsContextType>({
   settings: DEFAULT_SETTINGS,
   updateSettings: async () => {},
   loaded: false,
+  reload: async () => {},
 });
 
 export const useSettings = () => useContext(SettingsContext);
