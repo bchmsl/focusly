@@ -16,6 +16,8 @@ const Index = () => {
   const [spinning, setSpinning] = useState(false);
   const [contentKey, setContentKey] = useState(0);
   const { permission, subscribed, subscribe, sendNotification, isSupported } = usePushNotifications();
+  const { reload: reloadSettings } = useSettings();
+  const { reload: reloadTheme } = useTheme();
 
   const handleSignOut = async () => {
     await signOut();
