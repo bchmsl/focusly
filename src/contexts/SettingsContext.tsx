@@ -28,12 +28,14 @@ interface SettingsContextType {
   settings: Settings;
   updateSettings: (partial: Partial<Settings>) => Promise<void>;
   loaded: boolean;
+  reload: () => Promise<void>;
 }
 
 const SettingsContext = createContext<SettingsContextType>({
   settings: DEFAULT_SETTINGS,
   updateSettings: async () => {},
   loaded: false,
+  reload: async () => {},
 });
 
 export const useSettings = () => useContext(SettingsContext);
@@ -43,31 +45,30 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [loaded, setLoaded] = useState(false);
 
-  useEffect(() => {
+  const loadFromDb = useCallback(async () => {
     if (!user) { setLoaded(true); return; }
-    const load = async () => {
-      const { data } = await supabase
-        .from("user_settings")
-        .select("*")
-        .eq("user_id", user.id)
-        .maybeSingle();
+    const { data } = await supabase
+      .from("user_settings")
+      .select("*")
+      .eq("user_id", user.id)
+      .maybeSingle();
 
-      if (data) {
-        setSettings({
-          focusDuration: data.focus_duration,
-          shortBreakDuration: data.short_break_duration,
-          longBreakDuration: data.long_break_duration,
-          longBreakInterval: data.long_break_interval,
-          autoStartBreaks: data.auto_start_breaks,
-          autoStartFocus: data.auto_start_focus,
-          soundEnabled: data.sound_enabled,
-          soundVolume: data.sound_volume,
-        });
-      }
-      setLoaded(true);
-    };
-    load();
+    if (data) {
+      setSettings({
+        focusDuration: data.focus_duration,
+        shortBreakDuration: data.short_break_duration,
+        longBreakDuration: data.long_break_duration,
+        longBreakInterval: data.long_break_interval,
+        autoStartBreaks: data.auto_start_breaks,
+        autoStartFocus: data.auto_start_focus,
+        soundEnabled: data.sound_enabled,
+        soundVolume: data.sound_volume,
+      });
+    }
+    setLoaded(true);
   }, [user]);
+
+  useEffect(() => { loadFromDb(); }, [loadFromDb]);
 
   const updateSettings = useCallback(async (partial: Partial<Settings>) => {
     const next = { ...settings, ...partial };
@@ -88,7 +89,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   }, [settings, user]);
 
   return (
-    <SettingsContext.Provider value={{ settings, updateSettings, loaded }}>
+    <SettingsContext.Provider value={{ settings, updateSettings, loaded, reload: loadFromDb }}>
       {children}
     </SettingsContext.Provider>
   );

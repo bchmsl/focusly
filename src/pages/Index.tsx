@@ -1,12 +1,14 @@
 import { useCallback, useState } from "react";
 import PomodoroTimer from "@/components/PomodoroTimer";
 import TodoList from "@/components/TodoList";
-import { RefreshCw, LogOut, Bell, BellOff } from "lucide-react";
+import { Timer, LogOut, Bell, BellOff } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import SettingsPanel from "@/components/SettingsPanel";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { useSettings } from "@/contexts/SettingsContext";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const Index = () => {
   const { user, signOut } = useAuth();
@@ -14,6 +16,8 @@ const Index = () => {
   const [spinning, setSpinning] = useState(false);
   const [contentKey, setContentKey] = useState(0);
   const { permission, subscribed, subscribe, sendNotification, isSupported } = usePushNotifications();
+  const { reload: reloadSettings } = useSettings();
+  const { reload: reloadTheme } = useTheme();
 
   const handleSignOut = async () => {
     await signOut();
@@ -38,15 +42,16 @@ const Index = () => {
       <header className="border-b px-6 py-4">
         <div className="mx-auto flex max-w-5xl items-center gap-2">
           <button
-            onClick={() => {
+            onClick={async () => {
               setSpinning(true);
               setContentKey((k) => k + 1);
-              setTimeout(() => setSpinning(false), 600);
+              await Promise.all([reloadSettings(), reloadTheme()]);
+              setSpinning(false);
             }}
             className="p-1 text-primary hover:text-primary/80 transition-colors"
             title="Refresh"
           >
-            <RefreshCw className={`h-5 w-5 ${spinning ? "animate-spin" : ""}`} />
+            <Timer className={`h-5 w-5 ${spinning ? "animate-spin" : ""}`} />
           </button>
           <h1 className="text-lg font-semibold">Focusly</h1>
           <div className="ml-auto flex items-center gap-3">
