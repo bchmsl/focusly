@@ -115,7 +115,7 @@ const Index = () => {
               )
             )}
 
-            <SettingsPanel onTagsChanged={() => setContentKey((v) => v + 1)} />
+            <SettingsPanel onTagsChanged={() => todoReloadRef.current?.()} />
             <ThemeToggle />
             <button
               onClick={handleSignOut}
