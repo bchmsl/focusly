@@ -132,7 +132,7 @@ const Index = () => {
         <div className="grid gap-10 lg:grid-cols-2 lg:gap-16">
           <div className="flex flex-col items-center">
             <div className="w-full rounded-2xl border bg-card p-8 shadow-sm">
-              <PomodoroTimer key={contentKey} onTimerEnd={handleTimerEnd} />
+              <PomodoroTimer onTimerEnd={handleTimerEnd} reloadRef={timerReloadRef} />
             </div>
           </div>
           <div className="flex flex-col">
