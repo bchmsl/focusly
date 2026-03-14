@@ -1,12 +1,14 @@
 import { useCallback, useState } from "react";
 import PomodoroTimer from "@/components/PomodoroTimer";
 import TodoList from "@/components/TodoList";
-import { RefreshCw, LogOut, Bell, BellOff } from "lucide-react";
+import { Timer, LogOut, Bell, BellOff } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import SettingsPanel from "@/components/SettingsPanel";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { useSettings } from "@/contexts/SettingsContext";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const Index = () => {
   const { user, signOut } = useAuth();
