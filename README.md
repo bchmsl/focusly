@@ -163,7 +163,4 @@ Run `npm run build` and deploy the generated `dist/` folder to any static hostin
 
 ## License
 
-This project is dual-licensed under either of the following, at your option:
-
-- [MIT License](LICENSE-MIT)
-- [Apache License, Version 2.0](LICENSE-APACHE)
+This project is licensed under the [MIT License](LICENSE).
