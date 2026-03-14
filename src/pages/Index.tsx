@@ -42,15 +42,16 @@ const Index = () => {
       <header className="border-b px-6 py-4">
         <div className="mx-auto flex max-w-5xl items-center gap-2">
           <button
-            onClick={() => {
+            onClick={async () => {
               setSpinning(true);
               setContentKey((k) => k + 1);
-              setTimeout(() => setSpinning(false), 600);
+              await Promise.all([reloadSettings(), reloadTheme()]);
+              setSpinning(false);
             }}
             className="p-1 text-primary hover:text-primary/80 transition-colors"
             title="Refresh"
           >
-            <RefreshCw className={`h-5 w-5 ${spinning ? "animate-spin" : ""}`} />
+            <Timer className={`h-5 w-5 ${spinning ? "animate-spin" : ""}`} />
           </button>
           <h1 className="text-lg font-semibold">Focusly</h1>
           <div className="ml-auto flex items-center gap-3">

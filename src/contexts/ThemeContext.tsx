@@ -131,7 +131,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   }, [themeId, isDark]);
 
   return (
-    <ThemeContext.Provider value={{ themeId, colorMode, isDark, setThemeId, setColorMode }}>
+    <ThemeContext.Provider value={{ themeId, colorMode, isDark, setThemeId, setColorMode, reload: loadThemeFromDb }}>
       {children}
     </ThemeContext.Provider>
   );

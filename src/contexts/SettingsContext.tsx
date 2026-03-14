@@ -89,7 +89,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   }, [settings, user]);
 
   return (
-    <SettingsContext.Provider value={{ settings, updateSettings, loaded }}>
+    <SettingsContext.Provider value={{ settings, updateSettings, loaded, reload: loadFromDb }}>
       {children}
     </SettingsContext.Provider>
   );
