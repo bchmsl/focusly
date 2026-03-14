@@ -15,40 +15,43 @@ const Index = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [spinning, setSpinning] = useState(false);
-  const [contentKey, setContentKey] = useState(0);
   const { permission, subscribed, subscribe, sendNotification, isSupported } = usePushNotifications();
   const { reload: reloadSettings } = useSettings();
   const { reload: reloadTheme } = useTheme();
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const todoReloadRef = useRef<(() => void) | null>(null);
+  const timerReloadRef = useRef<(() => void) | null>(null);
+
+  const reloadAll = useCallback(async () => {
+    await Promise.all([reloadSettings(), reloadTheme()]);
+    todoReloadRef.current?.();
+    timerReloadRef.current?.();
+  }, [reloadSettings, reloadTheme]);
 
   // Realtime sync: listen to all user-relevant table changes
   useEffect(() => {
     if (!user) return;
 
-    const debouncedRefresh = (reloadFns: (() => Promise<void>)[]) => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(() => {
-        reloadFns.forEach(fn => fn());
-      }, 300);
-    };
-
     const channel = supabase
       .channel('realtime-sync')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, () => {
-        setContentKey(k => k + 1);
+        todoReloadRef.current?.();
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'task_tags' }, () => {
-        setContentKey(k => k + 1);
+        todoReloadRef.current?.();
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'tags' }, () => {
-        setContentKey(k => k + 1);
+        todoReloadRef.current?.();
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'timer_state' }, () => {
-        setContentKey(k => k + 1);
+        timerReloadRef.current?.();
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'user_settings' }, () => {
-        debouncedRefresh([reloadSettings, reloadTheme]);
-        setContentKey(k => k + 1);
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+        debounceRef.current = setTimeout(() => {
+          reloadSettings();
+          reloadTheme();
+        }, 300);
       })
       .subscribe();
 
@@ -83,8 +86,7 @@ const Index = () => {
           <button
             onClick={async () => {
               setSpinning(true);
-              setContentKey((k) => k + 1);
-              await Promise.all([reloadSettings(), reloadTheme()]);
+              await reloadAll();
               setSpinning(false);
             }}
             className="p-1 text-primary hover:text-primary/80 transition-colors"
@@ -113,7 +115,7 @@ const Index = () => {
               )
             )}
 
-            <SettingsPanel onTagsChanged={() => setContentKey((v) => v + 1)} />
+            <SettingsPanel onTagsChanged={() => todoReloadRef.current?.()} />
             <ThemeToggle />
             <button
               onClick={handleSignOut}
@@ -130,13 +132,13 @@ const Index = () => {
         <div className="grid gap-10 lg:grid-cols-2 lg:gap-16">
           <div className="flex flex-col items-center">
             <div className="w-full rounded-2xl border bg-card p-8 shadow-sm">
-              <PomodoroTimer key={contentKey} onTimerEnd={handleTimerEnd} />
+              <PomodoroTimer onTimerEnd={handleTimerEnd} reloadRef={timerReloadRef} />
             </div>
           </div>
           <div className="flex flex-col">
             <div className="w-full rounded-2xl border bg-card p-6 shadow-sm">
               <h2 className="mb-4 text-base font-semibold">Tasks</h2>
-              <TodoList key={contentKey} />
+              <TodoList reloadRef={todoReloadRef} />
             </div>
           </div>
         </div>

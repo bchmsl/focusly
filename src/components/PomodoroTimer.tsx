@@ -6,6 +6,7 @@ import { useSettings } from "@/contexts/SettingsContext";
 
 interface PomodoroTimerProps {
   onTimerEnd?: (mode: string) => void;
+  reloadRef?: React.MutableRefObject<(() => void) | null>;
 }
 
 type TimerMode = "focus" | "shortBreak" | "longBreak";
@@ -16,7 +17,7 @@ const MODE_LABELS: Record<TimerMode, string> = {
   longBreak: "Long Break",
 };
 
-const PomodoroTimer = ({ onTimerEnd }: PomodoroTimerProps) => {
+const PomodoroTimer = ({ onTimerEnd, reloadRef }: PomodoroTimerProps) => {
   const { user } = useAuth();
   const { settings, loaded: settingsLoaded } = useSettings();
 
@@ -27,7 +28,7 @@ const PomodoroTimer = ({ onTimerEnd }: PomodoroTimerProps) => {
   }), [settings.focusDuration, settings.shortBreakDuration, settings.longBreakDuration]);
 
   const [mode, setMode] = useState<TimerMode>("focus");
-  const [timeLeft, setTimeLeft] = useState(25 * 60);
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [isRunning, setIsRunning] = useState(false);
   const [completedSessions, setCompletedSessions] = useState(0);
   const [loaded, setLoaded] = useState(false);
@@ -46,7 +47,8 @@ const PomodoroTimer = ({ onTimerEnd }: PomodoroTimerProps) => {
 
   const durations = getDurations();
   const totalTime = durations[mode];
-  const progress = Math.max(0, Math.min(100, ((totalTime - timeLeft) / totalTime) * 100));
+  const displayTimeLeft = timeLeft ?? durations.focus;
+  const progress = Math.max(0, Math.min(100, ((totalTime - displayTimeLeft) / totalTime) * 100));
 
   const clearTimer = useCallback(() => {
     if (intervalRef.current) {
@@ -96,46 +98,51 @@ const PomodoroTimer = ({ onTimerEnd }: PomodoroTimerProps) => {
     [user]
   );
 
+  const loadTimerState = useCallback(async () => {
+    if (!user || !settingsLoaded) return;
+
+    const { data } = await supabase
+      .from("timer_state")
+      .select("mode, time_left, is_running, completed_sessions, last_tick_at")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    const d: Record<TimerMode, number> = {
+      focus: settings.focusDuration * 60,
+      shortBreak: settings.shortBreakDuration * 60,
+      longBreak: settings.longBreakDuration * 60,
+    };
+
+    if (data) {
+      const m = data.mode as TimerMode;
+      let tl = data.time_left;
+      if (data.is_running && data.last_tick_at) {
+        const elapsed = Math.floor((Date.now() - new Date(data.last_tick_at).getTime()) / 1000);
+        tl = Math.max(0, tl - elapsed);
+      }
+      setMode(m);
+      setTimeLeft(tl);
+      setIsRunning(data.is_running && tl > 0);
+      setCompletedSessions(data.completed_sessions);
+    } else {
+      setTimeLeft(d.focus);
+    }
+
+    setLoaded(true);
+  }, [user, settingsLoaded, settings.focusDuration, settings.shortBreakDuration, settings.longBreakDuration]);
+
   // Load timer state from DB (once per user) so settings updates don't get overwritten
   useEffect(() => {
     if (!user || !settingsLoaded) return;
     if (loadedTimerStateForUserRef.current === user.id) return;
-
     loadedTimerStateForUserRef.current = user.id;
+    loadTimerState();
+  }, [user, settingsLoaded, loadTimerState]);
 
-    const load = async () => {
-      const { data } = await supabase
-        .from("timer_state")
-        .select("mode, time_left, is_running, completed_sessions, last_tick_at")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      const d: Record<TimerMode, number> = {
-        focus: settings.focusDuration * 60,
-        shortBreak: settings.shortBreakDuration * 60,
-        longBreak: settings.longBreakDuration * 60,
-      };
-
-      if (data) {
-        const m = data.mode as TimerMode;
-        let tl = data.time_left;
-        if (data.is_running && data.last_tick_at) {
-          const elapsed = Math.floor((Date.now() - new Date(data.last_tick_at).getTime()) / 1000);
-          tl = Math.max(0, tl - elapsed);
-        }
-        setMode(m);
-        setTimeLeft(tl);
-        setIsRunning(data.is_running && tl > 0);
-        setCompletedSessions(data.completed_sessions);
-      } else {
-        setTimeLeft(d.focus);
-      }
-
-      setLoaded(true);
-    };
-
-    load();
-  }, [user, settingsLoaded]);
+  // Expose reload function to parent
+  useEffect(() => {
+    if (reloadRef) reloadRef.current = loadTimerState;
+  }, [reloadRef, loadTimerState]);
 
   const switchMode = useCallback(
     (newMode: TimerMode, sessions?: number, autoStart?: boolean) => {
@@ -226,7 +233,7 @@ const PomodoroTimer = ({ onTimerEnd }: PomodoroTimerProps) => {
   const toggleRunning = () => {
     const next = !isRunning;
     setIsRunning(next);
-    saveState(mode, timeLeft, next, completedSessions);
+    saveState(mode, displayTimeLeft, next, completedSessions);
   };
 
   const handleReset = () => {
@@ -237,9 +244,33 @@ const PomodoroTimer = ({ onTimerEnd }: PomodoroTimerProps) => {
     saveState(mode, d[mode], false, completedSessions);
   };
 
-  const minutes = Math.floor(timeLeft / 60);
-  const seconds = timeLeft % 60;
+  const minutes = Math.floor(displayTimeLeft / 60);
+  const seconds = displayTimeLeft % 60;
   const isFocus = mode === "focus";
+
+  // Show loading skeleton until timer state is loaded from DB
+  if (timeLeft === null) {
+    return (
+      <div className="flex flex-col items-center gap-8">
+        <div className="flex gap-1 rounded-lg bg-muted p-1">
+          {["Focus", "Short Break", "Long Break"].map((label) => (
+            <div key={label} className="rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground">{label}</div>
+          ))}
+        </div>
+        <div className="relative flex items-center justify-center">
+          <svg className="h-56 w-56 -rotate-90" viewBox="0 0 200 200">
+            <circle cx="100" cy="100" r="90" fill="none" stroke="hsl(var(--accent))" strokeWidth="6" />
+          </svg>
+          <div className="absolute flex flex-col items-center">
+            <span className="font-mono-timer text-5xl font-bold text-muted-foreground/30">--:--</span>
+            <span className="mt-1 text-sm font-medium text-muted-foreground">Loading</span>
+          </div>
+        </div>
+        <div className="h-2.5" />
+        <div className="h-14" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center gap-8">

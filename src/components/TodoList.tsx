@@ -21,7 +21,7 @@ interface TagType {
   emoji: string | null;
 }
 
-const TodoList = () => {
+const TodoList = ({ reloadRef }: { reloadRef?: React.MutableRefObject<(() => void) | null> }) => {
   const { user } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [tags, setTags] = useState<TagType[]>([]);
@@ -53,6 +53,11 @@ const TodoList = () => {
   }, [user]);
 
   useEffect(() => { loadTasks(); }, [loadTasks]);
+
+  // Expose reload function to parent
+  useEffect(() => {
+    if (reloadRef) reloadRef.current = loadTasks;
+  }, [reloadRef, loadTasks]);
 
   // Helpers
   const toggleExpanded = (id: string) => {
