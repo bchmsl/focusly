@@ -72,28 +72,27 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Load theme from DB when user logs in
-  useEffect(() => {
+  const loadThemeFromDb = useCallback(async () => {
     if (!userId) { dbLoaded.current = false; return; }
-    const load = async () => {
-      const { data } = await supabase
-        .from("user_settings")
-        .select("theme_id, color_mode")
-        .eq("user_id", userId)
-        .maybeSingle();
+    const { data } = await supabase
+      .from("user_settings")
+      .select("theme_id, color_mode")
+      .eq("user_id", userId)
+      .maybeSingle();
 
-      if (data) {
-        const dbTheme = VALID_THEMES.includes(data.theme_id as ThemeId) ? (data.theme_id as ThemeId) : "coral";
-        const dbMode = VALID_MODES.includes(data.color_mode as ColorMode) ? (data.color_mode as ColorMode) : "system";
-        setThemeIdState(dbTheme);
-        setColorModeState(dbMode);
-        localStorage.setItem("themeId", dbTheme);
-        localStorage.setItem("colorMode", dbMode);
-      }
-      dbLoaded.current = true;
-    };
-    load();
+    if (data) {
+      const dbTheme = VALID_THEMES.includes(data.theme_id as ThemeId) ? (data.theme_id as ThemeId) : "coral";
+      const dbMode = VALID_MODES.includes(data.color_mode as ColorMode) ? (data.color_mode as ColorMode) : "system";
+      setThemeIdState(dbTheme);
+      setColorModeState(dbMode);
+      localStorage.setItem("themeId", dbTheme);
+      localStorage.setItem("colorMode", dbMode);
+    }
+    dbLoaded.current = true;
   }, [userId]);
+
+  // Load theme from DB when user logs in
+  useEffect(() => { loadThemeFromDb(); }, [loadThemeFromDb]);
 
   useEffect(() => {
     const mql = window.matchMedia("(prefers-color-scheme: dark)");
