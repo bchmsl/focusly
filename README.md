@@ -134,9 +134,22 @@ Focusly uses the following Supabase tables:
 
 ## Deployment
 
+### Lovable (recommended)
+
 The easiest way to deploy Focusly is via [Lovable](https://lovable.dev) — open your project and click **Share → Publish**.
 
-For self-hosting, run `npm run build` and deploy the generated `dist/` folder to any static hosting service (Vercel, Netlify, Cloudflare Pages, etc.). Make sure to set your environment variables on the hosting platform.
+When your Lovable project is connected to Supabase, Lovable **automatically injects** `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` at build time. You do **not** need a `.env` file in the repository for Lovable — removing it from source control has no effect on the deployed app.
+
+> ⚠️ If you see a "Missing Supabase environment variables" error after deploying, go to your Lovable project settings and verify the Supabase integration is connected.
+
+### Self-hosting
+
+Run `npm run build` and deploy the generated `dist/` folder to any static hosting service (Vercel, Netlify, Cloudflare Pages, etc.). Set the following environment variables on the hosting platform before building:
+
+| Variable | Description |
+|---|---|
+| `VITE_SUPABASE_URL` | Your Supabase project URL |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Your Supabase anon (public) key |
 
 ---
 

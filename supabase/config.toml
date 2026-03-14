@@ -1,3 +1,7 @@
+# Replace "your-project-id" with your actual Supabase project ID before running
+# local Supabase CLI commands (e.g. `supabase start`, `supabase db push`).
+# Find your project ID in the Supabase dashboard under Project Settings → General.
+# On Lovable, this file is not used — credentials are managed by the platform.
 project_id = "your-project-id"
 
 [functions.push-notifications]
