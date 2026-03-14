@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect, useRef } from "react";
 import PomodoroTimer from "@/components/PomodoroTimer";
 import TodoList from "@/components/TodoList";
 import { Timer, LogOut, Bell, BellOff } from "lucide-react";
@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { useSettings } from "@/contexts/SettingsContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const { user, signOut } = useAuth();
@@ -18,6 +19,44 @@ const Index = () => {
   const { permission, subscribed, subscribe, sendNotification, isSupported } = usePushNotifications();
   const { reload: reloadSettings } = useSettings();
   const { reload: reloadTheme } = useTheme();
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Realtime sync: listen to all user-relevant table changes
+  useEffect(() => {
+    if (!user) return;
+
+    const debouncedRefresh = (reloadFns: (() => Promise<void>)[]) => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => {
+        reloadFns.forEach(fn => fn());
+      }, 300);
+    };
+
+    const channel = supabase
+      .channel('realtime-sync')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, () => {
+        setContentKey(k => k + 1);
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'task_tags' }, () => {
+        setContentKey(k => k + 1);
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tags' }, () => {
+        setContentKey(k => k + 1);
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'timer_state' }, () => {
+        setContentKey(k => k + 1);
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'user_settings' }, () => {
+        debouncedRefresh([reloadSettings, reloadTheme]);
+        setContentKey(k => k + 1);
+      })
+      .subscribe();
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      supabase.removeChannel(channel);
+    };
+  }, [user, reloadSettings, reloadTheme]);
 
   const handleSignOut = async () => {
     await signOut();
