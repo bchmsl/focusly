@@ -37,6 +37,7 @@ const ThemeContext = createContext<ThemeContextType>({
   isDark: false,
   setThemeId: () => {},
   setColorMode: () => {},
+  reload: async () => {},
 });
 
 export const useTheme = () => useContext(ThemeContext);
