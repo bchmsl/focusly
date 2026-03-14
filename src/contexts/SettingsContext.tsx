@@ -28,6 +28,7 @@ interface SettingsContextType {
   settings: Settings;
   updateSettings: (partial: Partial<Settings>) => Promise<void>;
   loaded: boolean;
+  reload: () => Promise<void>;
 }
 
 const SettingsContext = createContext<SettingsContextType>({
