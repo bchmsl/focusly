@@ -59,12 +59,12 @@ The app will be available at **http://localhost:8080**.
 
 ### Environment Variables
 
-Create a `.env` file in the project root. You can copy the example file and fill in your own Supabase credentials, or use the values below which belong to the project's hosted Supabase instance:
+Open the `.env` file (created in step 3 above) and replace the placeholder values with your real Supabase credentials:
 
 ```env
-VITE_SUPABASE_URL=https://devbpmxbyxsfrbrvbowo.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRldmJwbXhieXhzZnJicnZib3dvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNTc4MzcsImV4cCI6MjA4ODkzMzgzN30.z8JVeaj6uzRa1gzqZHMm9LfyQ9ZGJK7bySSjy-FSZ38
-VITE_SUPABASE_PROJECT_ID=devbpmxbyxsfrbrvbowo
+VITE_SUPABASE_URL=https://your-project-id.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=your-supabase-anon-key
+VITE_SUPABASE_PROJECT_ID=your-project-id
 ```
 
 You can find these values in your Supabase project dashboard under **Project Settings → API**.
