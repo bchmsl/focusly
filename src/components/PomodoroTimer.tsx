@@ -233,7 +233,7 @@ const PomodoroTimer = ({ onTimerEnd, reloadRef }: PomodoroTimerProps) => {
   const toggleRunning = () => {
     const next = !isRunning;
     setIsRunning(next);
-    saveState(mode, timeLeft, next, completedSessions);
+    saveState(mode, displayTimeLeft, next, completedSessions);
   };
 
   const handleReset = () => {
