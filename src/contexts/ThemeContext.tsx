@@ -28,6 +28,7 @@ interface ThemeContextType {
   isDark: boolean;
   setThemeId: (id: ThemeId) => void;
   setColorMode: (mode: ColorMode) => void;
+  reload: () => Promise<void>;
 }
 
 const ThemeContext = createContext<ThemeContextType>({
