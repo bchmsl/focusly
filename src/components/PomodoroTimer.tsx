@@ -244,9 +244,33 @@ const PomodoroTimer = ({ onTimerEnd, reloadRef }: PomodoroTimerProps) => {
     saveState(mode, d[mode], false, completedSessions);
   };
 
-  const minutes = Math.floor(timeLeft / 60);
-  const seconds = timeLeft % 60;
+  const minutes = Math.floor(displayTimeLeft / 60);
+  const seconds = displayTimeLeft % 60;
   const isFocus = mode === "focus";
+
+  // Show loading skeleton until timer state is loaded from DB
+  if (timeLeft === null) {
+    return (
+      <div className="flex flex-col items-center gap-8">
+        <div className="flex gap-1 rounded-lg bg-muted p-1">
+          {["Focus", "Short Break", "Long Break"].map((label) => (
+            <div key={label} className="rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground">{label}</div>
+          ))}
+        </div>
+        <div className="relative flex items-center justify-center">
+          <svg className="h-56 w-56 -rotate-90" viewBox="0 0 200 200">
+            <circle cx="100" cy="100" r="90" fill="none" stroke="hsl(var(--accent))" strokeWidth="6" />
+          </svg>
+          <div className="absolute flex flex-col items-center">
+            <span className="font-mono-timer text-5xl font-bold text-muted-foreground/30">--:--</span>
+            <span className="mt-1 text-sm font-medium text-muted-foreground">Loading</span>
+          </div>
+        </div>
+        <div className="h-2.5" />
+        <div className="h-14" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center gap-8">
