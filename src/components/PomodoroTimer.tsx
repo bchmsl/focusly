@@ -98,46 +98,51 @@ const PomodoroTimer = ({ onTimerEnd, reloadRef }: PomodoroTimerProps) => {
     [user]
   );
 
+  const loadTimerState = useCallback(async () => {
+    if (!user || !settingsLoaded) return;
+
+    const { data } = await supabase
+      .from("timer_state")
+      .select("mode, time_left, is_running, completed_sessions, last_tick_at")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    const d: Record<TimerMode, number> = {
+      focus: settings.focusDuration * 60,
+      shortBreak: settings.shortBreakDuration * 60,
+      longBreak: settings.longBreakDuration * 60,
+    };
+
+    if (data) {
+      const m = data.mode as TimerMode;
+      let tl = data.time_left;
+      if (data.is_running && data.last_tick_at) {
+        const elapsed = Math.floor((Date.now() - new Date(data.last_tick_at).getTime()) / 1000);
+        tl = Math.max(0, tl - elapsed);
+      }
+      setMode(m);
+      setTimeLeft(tl);
+      setIsRunning(data.is_running && tl > 0);
+      setCompletedSessions(data.completed_sessions);
+    } else {
+      setTimeLeft(d.focus);
+    }
+
+    setLoaded(true);
+  }, [user, settingsLoaded, settings.focusDuration, settings.shortBreakDuration, settings.longBreakDuration]);
+
   // Load timer state from DB (once per user) so settings updates don't get overwritten
   useEffect(() => {
     if (!user || !settingsLoaded) return;
     if (loadedTimerStateForUserRef.current === user.id) return;
-
     loadedTimerStateForUserRef.current = user.id;
+    loadTimerState();
+  }, [user, settingsLoaded, loadTimerState]);
 
-    const load = async () => {
-      const { data } = await supabase
-        .from("timer_state")
-        .select("mode, time_left, is_running, completed_sessions, last_tick_at")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      const d: Record<TimerMode, number> = {
-        focus: settings.focusDuration * 60,
-        shortBreak: settings.shortBreakDuration * 60,
-        longBreak: settings.longBreakDuration * 60,
-      };
-
-      if (data) {
-        const m = data.mode as TimerMode;
-        let tl = data.time_left;
-        if (data.is_running && data.last_tick_at) {
-          const elapsed = Math.floor((Date.now() - new Date(data.last_tick_at).getTime()) / 1000);
-          tl = Math.max(0, tl - elapsed);
-        }
-        setMode(m);
-        setTimeLeft(tl);
-        setIsRunning(data.is_running && tl > 0);
-        setCompletedSessions(data.completed_sessions);
-      } else {
-        setTimeLeft(d.focus);
-      }
-
-      setLoaded(true);
-    };
-
-    load();
-  }, [user, settingsLoaded]);
+  // Expose reload function to parent
+  useEffect(() => {
+    if (reloadRef) reloadRef.current = loadTimerState;
+  }, [reloadRef, loadTimerState]);
 
   const switchMode = useCallback(
     (newMode: TimerMode, sessions?: number, autoStart?: boolean) => {
