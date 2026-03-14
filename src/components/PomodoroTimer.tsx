@@ -17,7 +17,7 @@ const MODE_LABELS: Record<TimerMode, string> = {
   longBreak: "Long Break",
 };
 
-const PomodoroTimer = ({ onTimerEnd }: PomodoroTimerProps) => {
+const PomodoroTimer = ({ onTimerEnd, reloadRef }: PomodoroTimerProps) => {
   const { user } = useAuth();
   const { settings, loaded: settingsLoaded } = useSettings();
 
@@ -28,7 +28,7 @@ const PomodoroTimer = ({ onTimerEnd }: PomodoroTimerProps) => {
   }), [settings.focusDuration, settings.shortBreakDuration, settings.longBreakDuration]);
 
   const [mode, setMode] = useState<TimerMode>("focus");
-  const [timeLeft, setTimeLeft] = useState(25 * 60);
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [isRunning, setIsRunning] = useState(false);
   const [completedSessions, setCompletedSessions] = useState(0);
   const [loaded, setLoaded] = useState(false);
