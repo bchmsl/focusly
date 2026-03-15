@@ -28,6 +28,7 @@ export interface Settings {
   displayMode: "pomodoro" | "clock";
   showSeconds: boolean;
   weatherCity: string | null;
+  showWeather: boolean;
   showPomodoro: boolean;
   showTasks: boolean;
   showNotes: boolean;
@@ -46,6 +47,7 @@ const DEFAULT_SETTINGS: Settings = {
   displayMode: "pomodoro",
   showSeconds: false,
   weatherCity: null,
+  showWeather: true,
   showPomodoro: true,
   showTasks: true,
   showNotes: true,
