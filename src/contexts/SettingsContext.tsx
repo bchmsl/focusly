@@ -76,6 +76,8 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
         displayMode: (data as any).display_mode ?? "pomodoro",
         showSeconds: (data as any).show_seconds ?? false,
         weatherCity: (data as any).weather_city ?? null,
+        showPomodoro: (data as any).show_pomodoro ?? true,
+        showTasks: (data as any).show_tasks ?? true,
       });
     }
     setLoaded(true);
