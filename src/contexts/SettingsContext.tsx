@@ -25,6 +25,9 @@ const DEFAULT_SETTINGS: Settings = {
   autoStartFocus: false,
   soundEnabled: true,
   soundVolume: 70,
+  displayMode: "pomodoro",
+  showSeconds: false,
+  weatherCity: null,
 };
 
 interface SettingsContextType {
