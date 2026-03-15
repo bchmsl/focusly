@@ -201,12 +201,12 @@ const Index = () => {
     setExpandedCard((prev) => (prev === card ? null : card));
   };
 
-  const renderCardContent = (card: CardId) => {
+  const renderCardContent = (card: CardId, isExpanded = false) => {
     switch (card) {
-      case "clock": return <ClockDisplay expanded={expandedCard === "clock"} />;
-      case "timer": return <PomodoroTimer onTimerEnd={handleTimerEnd} reloadRef={timerReloadRef} />;
-      case "tasks": return <TodoList reloadRef={todoReloadRef} />;
-      case "notes": return <NotesList reloadRef={notesReloadRef} />;
+      case "clock": return <ClockDisplay expanded={isExpanded} />;
+      case "timer": return <PomodoroTimer onTimerEnd={handleTimerEnd} reloadRef={timerReloadRef} expanded={isExpanded} />;
+      case "tasks": return <TodoList reloadRef={todoReloadRef} expanded={isExpanded} />;
+      case "notes": return <NotesList reloadRef={notesReloadRef} expanded={isExpanded} />;
     }
   };
 
