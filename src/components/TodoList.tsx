@@ -52,6 +52,7 @@ const TodoList = ({ reloadRef }: { reloadRef?: React.MutableRefObject<(() => voi
       }
       setTaskTagMap(map);
     }
+    setLoading(false);
   }, [user]);
 
   useEffect(() => { loadTasks(); }, [loadTasks]);

@@ -50,6 +50,7 @@ const NotesList = ({ reloadRef }: { reloadRef?: React.MutableRefObject<(() => vo
       }
       setNoteTagMap(map);
     }
+    setLoading(false);
   }, [user]);
 
   useEffect(() => { loadNotes(); }, [loadNotes]);
