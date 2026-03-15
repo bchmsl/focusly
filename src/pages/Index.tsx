@@ -69,6 +69,7 @@ const Index = () => {
     setExpandedCard((prev) => (prev === card ? null : card));
   };
 
+  const isClockExpanded = expandedCard === "clock";
   const isTimerExpanded = expandedCard === "timer";
   const isTasksExpanded = expandedCard === "tasks";
   const isClockCollapsed = collapsedCards.has("clock");
