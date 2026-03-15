@@ -90,6 +90,8 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   const updateSettings = useCallback(async (partial: Partial<Settings>) => {
     const next = { ...settings, ...partial };
     setSettings(next);
+    // Suppress realtime-triggered reloads for 2s after a local update
+    suppressReloadUntilRef.current = Date.now() + 2000;
     if (!user) return;
 
     await supabase.from("user_settings").upsert({
