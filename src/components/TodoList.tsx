@@ -31,6 +31,7 @@ const TodoList = ({ reloadRef }: { reloadRef?: React.MutableRefObject<(() => voi
   const [activeFilterTag, setActiveFilterTag] = useState<string | null>(null);
   const [editTask, setEditTask] = useState<Task | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const editDialogOpenRef = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const loadTasks = useCallback(async () => {
@@ -54,9 +55,15 @@ const TodoList = ({ reloadRef }: { reloadRef?: React.MutableRefObject<(() => voi
 
   useEffect(() => { loadTasks(); }, [loadTasks]);
 
-  // Expose reload function to parent
+  // Expose reload function to parent (guarded by edit dialog state)
   useEffect(() => {
-    if (reloadRef) reloadRef.current = loadTasks;
+    if (reloadRef) {
+      reloadRef.current = () => {
+        if (!editDialogOpenRef.current) {
+          loadTasks();
+        }
+      };
+    }
   }, [reloadRef, loadTasks]);
 
   // Helpers
@@ -392,7 +399,11 @@ const TodoList = ({ reloadRef }: { reloadRef?: React.MutableRefObject<(() => voi
         open={editDialogOpen}
         onOpenChange={(open) => {
           setEditDialogOpen(open);
-          if (!open) setEditTask(null);
+          editDialogOpenRef.current = open;
+          if (!open) {
+            setEditTask(null);
+            loadTasks();
+          }
         }}
         tasks={tasks}
         tags={tags}
