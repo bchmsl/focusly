@@ -7,6 +7,7 @@ import { useSettings } from "@/contexts/SettingsContext";
 interface PomodoroTimerProps {
   onTimerEnd?: (mode: string) => void;
   reloadRef?: React.MutableRefObject<(() => void) | null>;
+  expanded?: boolean;
 }
 
 type TimerMode = "focus" | "shortBreak" | "longBreak";
