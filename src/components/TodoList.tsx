@@ -410,8 +410,10 @@ const TodoList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject<
           setEditDialogOpen(open);
           editDialogOpenRef.current = open;
           if (!open) {
+            const wasDelete = deletedRef.current;
+            deletedRef.current = false;
             setEditTask(null);
-            loadTasks();
+            if (!wasDelete) loadTasks();
           }
         }}
         tasks={tasks}

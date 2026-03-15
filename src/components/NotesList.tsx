@@ -322,8 +322,10 @@ const NotesList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject
           setEditDialogOpen(open);
           editDialogOpenRef.current = open;
           if (!open) {
+            const wasDelete = deletedRef.current;
+            deletedRef.current = false;
             setEditNote(null);
-            loadNotes();
+            if (!wasDelete) loadNotes();
           }
         }}
         tags={tags}
