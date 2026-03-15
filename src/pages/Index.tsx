@@ -351,17 +351,8 @@ const Index = () => {
         {!expandedCard && hasAnyCards && (
           <DragDropContext onDragEnd={onCardDragEnd}>
             <div className="flex flex-col md:flex-row gap-6 items-start">
-              <div className={`${rightCards.length === 0 && leftCards.length > 0 ? "w-full" : "flex-1 w-full"}`}>
-                {renderColumn("col-left", leftCards)}
-              </div>
-              <div className={`${leftCards.length === 0 && rightCards.length > 0 ? "w-full" : "flex-1 w-full"} ${rightCards.length === 0 ? "hidden md:block" : ""}`}>
-                {renderColumn("col-right", rightCards)}
-              </div>
-              {leftCards.length === 0 && (
-                <div className="flex-1 w-full hidden md:block">
-                  {renderColumn("col-left", leftCards)}
-                </div>
-              )}
+              {renderColumn("col-left", leftCards)}
+              {renderColumn("col-right", rightCards)}
             </div>
           </DragDropContext>
         )}
