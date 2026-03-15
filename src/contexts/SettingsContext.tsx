@@ -11,6 +11,9 @@ export interface Settings {
   autoStartFocus: boolean;
   soundEnabled: boolean;
   soundVolume: number;        // 0-100
+  displayMode: "pomodoro" | "clock";
+  showSeconds: boolean;
+  weatherCity: string | null;
 }
 
 const DEFAULT_SETTINGS: Settings = {
