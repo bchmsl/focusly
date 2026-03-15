@@ -30,6 +30,8 @@ const DEFAULT_SETTINGS: Settings = {
   displayMode: "pomodoro",
   showSeconds: false,
   weatherCity: null,
+  showPomodoro: true,
+  showTasks: true,
 };
 
 interface SettingsContextType {
