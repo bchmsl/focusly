@@ -77,9 +77,11 @@ const Index = () => {
   const isClockExpanded = expandedCard === "clock";
   const isTimerExpanded = expandedCard === "timer";
   const isTasksExpanded = expandedCard === "tasks";
+  const isNotesExpanded = expandedCard === "notes";
   const isClockCollapsed = collapsedCards.has("clock");
   const isTimerCollapsed = collapsedCards.has("timer");
   const isTasksCollapsed = collapsedCards.has("tasks");
+  const isNotesCollapsed = collapsedCards.has("notes");
 
   return (
     <div className="min-h-screen bg-background">
