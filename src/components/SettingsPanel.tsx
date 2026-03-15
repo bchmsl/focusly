@@ -356,7 +356,7 @@ const ToggleRow = React.forwardRef<HTMLDivElement, {
   checked: boolean;
   onChange: (v: boolean) => void;
 }>(({ label, description, checked, onChange }, ref) => (
-  <div className="flex items-start justify-between gap-4">
+  <div ref={ref} className="flex items-start justify-between gap-4">
     <div>
       <p className="text-sm">{label}</p>
       <p className="text-xs text-muted-foreground">{description}</p>
@@ -374,6 +374,6 @@ const ToggleRow = React.forwardRef<HTMLDivElement, {
       />
     </button>
   </div>
-);
+));
 
 export default SettingsPanel;
