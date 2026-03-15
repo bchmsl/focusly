@@ -33,6 +33,7 @@ const DEFAULT_SETTINGS: Settings = {
   weatherCity: null,
   showPomodoro: true,
   showTasks: true,
+  showNotes: true,
 };
 
 interface SettingsContextType {
