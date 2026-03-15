@@ -108,7 +108,7 @@ const Index = () => {
                 </div>
               )
             )}
-            <SettingsPanel onTagsChanged={() => todoReloadRef.current?.()} />
+            <SettingsPanel onTagsChanged={() => { todoReloadRef.current?.(); notesReloadRef.current?.(); }} />
             <ThemeToggle />
             <button onClick={handleSignOut} className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
               <LogOut className="h-4 w-4" />
