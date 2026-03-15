@@ -55,9 +55,15 @@ const TodoList = ({ reloadRef }: { reloadRef?: React.MutableRefObject<(() => voi
 
   useEffect(() => { loadTasks(); }, [loadTasks]);
 
-  // Expose reload function to parent
+  // Expose reload function to parent (guarded by edit dialog state)
   useEffect(() => {
-    if (reloadRef) reloadRef.current = loadTasks;
+    if (reloadRef) {
+      reloadRef.current = () => {
+        if (!editDialogOpenRef.current) {
+          loadTasks();
+        }
+      };
+    }
   }, [reloadRef, loadTasks]);
 
   // Helpers
