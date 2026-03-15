@@ -39,7 +39,7 @@ const WEATHER_ICONS: Record<number, React.ElementType> = {
   99: CloudLightning,
 };
 
-const ClockDisplay = () => {
+const ClockDisplay = ({ expanded = false }: { expanded?: boolean }) => {
   const { settings } = useSettings();
   const [now, setNow] = useState(new Date());
   const [weather, setWeather] = useState<WeatherData | null>(null);
