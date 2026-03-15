@@ -24,6 +24,7 @@ const SettingsPanel = ({ onTagsChanged }: { onTagsChanged?: () => void }) => {
   const [editingTagId, setEditingTagId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ name: "", color: "", emoji: "" });
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [cityInput, setCityInput] = useState(settings.weatherCity || "");
 
   const loadTags = useCallback(async () => {
     if (!user) return;
