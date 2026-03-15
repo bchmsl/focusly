@@ -51,7 +51,9 @@ const Index = () => {
   localLayoutRef.current = localLayout;
 
   useEffect(() => {
-    setLocalLayout(settings.cardLayout);
+    if (settings.cardLayout?.left && settings.cardLayout?.right) {
+      setLocalLayout(settings.cardLayout);
+    }
   }, [settings.cardLayout]);
 
   const saveLayout = useCallback((layout: CardLayout) => {
