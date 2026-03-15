@@ -11,6 +11,9 @@ export interface Settings {
   autoStartFocus: boolean;
   soundEnabled: boolean;
   soundVolume: number;        // 0-100
+  displayMode: "pomodoro" | "clock";
+  showSeconds: boolean;
+  weatherCity: string | null;
 }
 
 const DEFAULT_SETTINGS: Settings = {
@@ -22,6 +25,9 @@ const DEFAULT_SETTINGS: Settings = {
   autoStartFocus: false,
   soundEnabled: true,
   soundVolume: 70,
+  displayMode: "pomodoro",
+  showSeconds: false,
+  weatherCity: null,
 };
 
 interface SettingsContextType {
@@ -63,6 +69,9 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
         autoStartFocus: data.auto_start_focus,
         soundEnabled: data.sound_enabled,
         soundVolume: data.sound_volume,
+        displayMode: (data as any).display_mode ?? "pomodoro",
+        showSeconds: (data as any).show_seconds ?? false,
+        weatherCity: (data as any).weather_city ?? null,
       });
     }
     setLoaded(true);
@@ -85,6 +94,9 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
       auto_start_focus: next.autoStartFocus,
       sound_enabled: next.soundEnabled,
       sound_volume: next.soundVolume,
+      display_mode: next.displayMode,
+      show_seconds: next.showSeconds,
+      weather_city: next.weatherCity,
     } as any, { onConflict: "user_id" });
   }, [settings, user]);
 

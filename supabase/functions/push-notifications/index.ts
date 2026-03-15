@@ -135,7 +135,7 @@ async function encryptPayload(
   // Import subscriber's public key
   const subscriberKey = await crypto.subtle.importKey(
     "raw",
-    p256dhBytes,
+    p256dhBytes.buffer as ArrayBuffer,
     { name: "ECDH", namedCurve: "P-256" },
     false,
     []
@@ -168,7 +168,7 @@ async function encryptPayload(
   // PRK from auth
   const prkAuth = await crypto.subtle.importKey(
     "raw",
-    authBytes,
+    authBytes.buffer as ArrayBuffer,
     { name: "HMAC", hash: "SHA-256" },
     false,
     ["sign"]
@@ -435,7 +435,7 @@ Deno.serve(async (req) => {
     });
   } catch (error) {
     console.error("Edge function error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: (error as Error).message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

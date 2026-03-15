@@ -199,48 +199,57 @@ export type Database = {
           auto_start_focus: boolean
           color_mode: string
           created_at: string
+          display_mode: string
           focus_duration: number
           id: string
           long_break_duration: number
           long_break_interval: number
           short_break_duration: number
+          show_seconds: boolean
           sound_enabled: boolean
           sound_volume: number
           theme_id: string
           updated_at: string
           user_id: string
+          weather_city: string | null
         }
         Insert: {
           auto_start_breaks?: boolean
           auto_start_focus?: boolean
           color_mode?: string
           created_at?: string
+          display_mode?: string
           focus_duration?: number
           id?: string
           long_break_duration?: number
           long_break_interval?: number
           short_break_duration?: number
+          show_seconds?: boolean
           sound_enabled?: boolean
           sound_volume?: number
           theme_id?: string
           updated_at?: string
           user_id: string
+          weather_city?: string | null
         }
         Update: {
           auto_start_breaks?: boolean
           auto_start_focus?: boolean
           color_mode?: string
           created_at?: string
+          display_mode?: string
           focus_duration?: number
           id?: string
           long_break_duration?: number
           long_break_interval?: number
           short_break_duration?: number
+          show_seconds?: boolean
           sound_enabled?: boolean
           sound_volume?: number
           theme_id?: string
           updated_at?: string
           user_id?: string
+          weather_city?: string | null
         }
         Relationships: []
       }

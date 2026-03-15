@@ -1,7 +1,8 @@
 import { useCallback, useState, useEffect, useRef } from "react";
 import PomodoroTimer from "@/components/PomodoroTimer";
+import ClockDisplay from "@/components/ClockDisplay";
 import TodoList from "@/components/TodoList";
-import { Timer, LogOut, Bell, BellOff } from "lucide-react";
+import { Timer, LogOut, Bell, BellOff, Maximize2, Minimize2 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import SettingsPanel from "@/components/SettingsPanel";
 import { useAuth } from "@/contexts/AuthContext";
@@ -16,11 +17,12 @@ const Index = () => {
   const navigate = useNavigate();
   const [spinning, setSpinning] = useState(false);
   const { permission, subscribed, subscribe, sendNotification, isSupported } = usePushNotifications();
-  const { reload: reloadSettings } = useSettings();
+  const { settings, reload: reloadSettings } = useSettings();
   const { reload: reloadTheme } = useTheme();
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const todoReloadRef = useRef<(() => void) | null>(null);
   const timerReloadRef = useRef<(() => void) | null>(null);
+  const [expandedCard, setExpandedCard] = useState<"timer" | "tasks" | null>(null);
 
   const reloadAll = useCallback(async () => {
     await Promise.all([reloadSettings(), reloadTheme()]);
@@ -28,7 +30,7 @@ const Index = () => {
     timerReloadRef.current?.();
   }, [reloadSettings, reloadTheme]);
 
-  // Realtime sync: listen to all user-relevant table changes
+  // Realtime sync
   useEffect(() => {
     if (!user) return;
 
@@ -79,6 +81,13 @@ const Index = () => {
     await subscribe();
   };
 
+  const toggleExpand = (card: "timer" | "tasks") => {
+    setExpandedCard((prev) => (prev === card ? null : card));
+  };
+
+  const isTimerExpanded = expandedCard === "timer";
+  const isTasksExpanded = expandedCard === "tasks";
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b px-6 py-4">
@@ -98,7 +107,6 @@ const Index = () => {
           <div className="ml-auto flex items-center gap-3">
             <span className="text-sm text-muted-foreground hidden sm:inline">{user?.email}</span>
 
-            {/* Push notification toggle */}
             {isSupported && (
               permission !== "granted" || !subscribed ? (
                 <button
@@ -129,18 +137,77 @@ const Index = () => {
       </header>
 
       <main className="mx-auto max-w-5xl px-6 py-10">
-        <div className="grid gap-10 lg:grid-cols-2 lg:gap-16">
-          <div className="flex flex-col items-center">
-            <div className="w-full rounded-2xl border bg-card p-8 shadow-sm">
-              <PomodoroTimer onTimerEnd={handleTimerEnd} reloadRef={timerReloadRef} />
+        {/* Fullscreen overlay */}
+        {expandedCard && (
+          <div
+            className="fixed inset-0 z-30 bg-background/60 backdrop-blur-sm"
+            onClick={() => setExpandedCard(null)}
+          />
+        )}
+
+        <div className={`grid gap-10 lg:grid-cols-2 lg:gap-16 ${expandedCard ? "" : ""}`}>
+          {/* Timer / Clock card */}
+          {!isTasksExpanded && (
+            <div
+              className={`flex flex-col items-center transition-all duration-300 ${
+                isTimerExpanded
+                  ? "fixed inset-4 z-40 flex items-center justify-center"
+                  : ""
+              }`}
+            >
+              <div
+                className={`w-full rounded-2xl border bg-card shadow-sm relative ${
+                  isTimerExpanded
+                    ? "h-full flex flex-col items-center justify-center p-12"
+                    : "p-8"
+                }`}
+              >
+                <button
+                  onClick={() => toggleExpand("timer")}
+                  className="absolute top-3 right-3 flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors z-10"
+                  aria-label={isTimerExpanded ? "Minimize" : "Maximize"}
+                >
+                  {isTimerExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+                </button>
+                {settings.displayMode === "clock" ? (
+                  <ClockDisplay />
+                ) : (
+                  <PomodoroTimer onTimerEnd={handleTimerEnd} reloadRef={timerReloadRef} />
+                )}
+              </div>
             </div>
-          </div>
-          <div className="flex flex-col">
-            <div className="w-full rounded-2xl border bg-card p-6 shadow-sm">
-              <h2 className="mb-4 text-base font-semibold">Tasks</h2>
-              <TodoList reloadRef={todoReloadRef} />
+          )}
+
+          {/* Tasks card */}
+          {!isTimerExpanded && (
+            <div
+              className={`flex flex-col transition-all duration-300 ${
+                isTasksExpanded
+                  ? "fixed inset-4 z-40"
+                  : ""
+              }`}
+            >
+              <div
+                className={`w-full rounded-2xl border bg-card shadow-sm relative ${
+                  isTasksExpanded
+                    ? "h-full flex flex-col p-6 overflow-hidden"
+                    : "p-6"
+                }`}
+              >
+                <button
+                  onClick={() => toggleExpand("tasks")}
+                  className="absolute top-3 right-3 flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors z-10"
+                  aria-label={isTasksExpanded ? "Minimize" : "Maximize"}
+                >
+                  {isTasksExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+                </button>
+                <h2 className="mb-4 text-base font-semibold">Tasks</h2>
+                <div className={isTasksExpanded ? "flex-1 overflow-y-auto" : ""}>
+                  <TodoList reloadRef={todoReloadRef} />
+                </div>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </main>
     </div>
