@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSettings } from "@/contexts/SettingsContext";
-import { CloudSun, Cloud, CloudRain, CloudSnow, Sun, CloudLightning, CloudDrizzle, Thermometer, MapPin } from "lucide-react";
+import { CloudSun, Cloud, CloudRain, CloudSnow, Sun, CloudLightning, CloudDrizzle, Thermometer, MapPin, Loader2 } from "lucide-react";
 
 interface WeatherData {
   temperature: number;
@@ -9,40 +9,69 @@ interface WeatherData {
 }
 
 const WEATHER_ICONS: Record<number, React.ElementType> = {
-  0: Sun,
-  1: Sun,
-  2: CloudSun,
-  3: Cloud,
-  45: Cloud,
-  48: Cloud,
-  51: CloudDrizzle,
-  53: CloudDrizzle,
-  55: CloudDrizzle,
-  56: CloudDrizzle,
-  57: CloudDrizzle,
-  61: CloudRain,
-  63: CloudRain,
-  65: CloudRain,
-  66: CloudRain,
-  67: CloudRain,
-  71: CloudSnow,
-  73: CloudSnow,
-  75: CloudSnow,
-  77: CloudSnow,
-  80: CloudRain,
-  81: CloudRain,
-  82: CloudRain,
-  85: CloudSnow,
-  86: CloudSnow,
-  95: CloudLightning,
-  96: CloudLightning,
-  99: CloudLightning,
+  0: Sun, 1: Sun, 2: CloudSun, 3: Cloud,
+  45: Cloud, 48: Cloud,
+  51: CloudDrizzle, 53: CloudDrizzle, 55: CloudDrizzle, 56: CloudDrizzle, 57: CloudDrizzle,
+  61: CloudRain, 63: CloudRain, 65: CloudRain, 66: CloudRain, 67: CloudRain,
+  71: CloudSnow, 73: CloudSnow, 75: CloudSnow, 77: CloudSnow,
+  80: CloudRain, 81: CloudRain, 82: CloudRain, 85: CloudSnow, 86: CloudSnow,
+  95: CloudLightning, 96: CloudLightning, 99: CloudLightning,
 };
+
+async function getLocationByIP(): Promise<{ lat: number; lon: number; city: string } | null> {
+  // Try multiple IP geolocation services as fallbacks
+  const services = [
+    async () => {
+      const res = await fetch("https://ipapi.co/json/");
+      const data = await res.json();
+      return { lat: data.latitude, lon: data.longitude, city: data.city || "Your location" };
+    },
+    async () => {
+      const res = await fetch("https://ip-api.com/json/?fields=lat,lon,city");
+      const data = await res.json();
+      return { lat: data.lat, lon: data.lon, city: data.city || "Your location" };
+    },
+  ];
+
+  for (const service of services) {
+    try {
+      const result = await service();
+      if (result.lat && result.lon) return result;
+    } catch {
+      continue;
+    }
+  }
+  return null;
+}
+
+async function getLocationByBrowser(): Promise<{ lat: number; lon: number; city: string } | null> {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) { resolve(null); return; }
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          // Reverse geocode to get city name
+          const res = await fetch(
+            `https://geocoding-api.open-meteo.com/v1/search?name=&latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&count=1`
+          );
+          const data = await res.json();
+          const city = data.results?.[0]?.name || "Your location";
+          resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude, city });
+        } catch {
+          resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude, city: "Your location" });
+        }
+      },
+      () => resolve(null),
+      { timeout: 5000 }
+    );
+  });
+}
 
 const ClockDisplay = ({ expanded = false }: { expanded?: boolean }) => {
   const { settings } = useSettings();
   const [now, setNow] = useState(new Date());
   const [weather, setWeather] = useState<WeatherData | null>(null);
+  const [weatherLoading, setWeatherLoading] = useState(false);
 
   // Update clock every second
   useEffect(() => {
@@ -52,30 +81,35 @@ const ClockDisplay = ({ expanded = false }: { expanded?: boolean }) => {
 
   // Fetch weather
   useEffect(() => {
+    if (!settings.showWeather) { setWeather(null); return; }
+
     const fetchWeather = async () => {
       try {
+        setWeatherLoading(true);
         let lat: number, lon: number, cityName: string;
 
         if (settings.weatherCity) {
-          // Geocode the city name
           const geoRes = await fetch(
             `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(settings.weatherCity)}&count=1`
           );
           const geoData = await geoRes.json();
-          if (!geoData.results?.length) return;
+          if (!geoData.results?.length) { setWeatherLoading(false); return; }
           lat = geoData.results[0].latitude;
           lon = geoData.results[0].longitude;
           cityName = geoData.results[0].name;
         } else {
-          // Auto-detect via IP geolocation
-          try {
-            const ipRes = await fetch("https://ipapi.co/json/");
-            const ipData = await ipRes.json();
-            lat = ipData.latitude;
-            lon = ipData.longitude;
-            cityName = ipData.city || "Your location";
-          } catch {
-            return;
+          // Try IP-based first, then browser geolocation as fallback
+          const ipResult = await getLocationByIP();
+          if (ipResult) {
+            lat = ipResult.lat;
+            lon = ipResult.lon;
+            cityName = ipResult.city;
+          } else {
+            const browserResult = await getLocationByBrowser();
+            if (!browserResult) { setWeatherLoading(false); return; }
+            lat = browserResult.lat;
+            lon = browserResult.lon;
+            cityName = browserResult.city;
           }
         }
 
@@ -92,13 +126,15 @@ const ClockDisplay = ({ expanded = false }: { expanded?: boolean }) => {
         }
       } catch {
         // Weather is non-critical
+      } finally {
+        setWeatherLoading(false);
       }
     };
 
     fetchWeather();
-    const interval = setInterval(fetchWeather, 10 * 60 * 1000); // refresh every 10 min
+    const interval = setInterval(fetchWeather, 10 * 60 * 1000);
     return () => clearInterval(interval);
-  }, [settings.weatherCity]);
+  }, [settings.weatherCity, settings.showWeather]);
 
   const hours = String(now.getHours()).padStart(2, "0");
   const minutes = String(now.getMinutes()).padStart(2, "0");
@@ -126,6 +162,12 @@ const ClockDisplay = ({ expanded = false }: { expanded?: boolean }) => {
       </div>
 
       {/* Weather */}
+      {settings.showWeather && weatherLoading && !weather && (
+        <div className={`flex items-center rounded-xl bg-muted/50 ${expanded ? "gap-3 px-4 py-2.5" : "gap-3 px-4 py-2.5"}`}>
+          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+          <span className="text-xs text-muted-foreground">Loading weather...</span>
+        </div>
+      )}
       {weather && (
         <div className={`flex items-center rounded-xl bg-muted/50 ${expanded ? "gap-3 px-4 py-2.5 sm:gap-4 sm:px-5 sm:py-3 md:gap-5 md:px-6 md:py-4" : "gap-3 px-4 py-2.5"}`}>
           {WeatherIcon && <WeatherIcon className={`text-primary ${expanded ? "h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8" : "h-5 w-5"}`} />}
