@@ -56,7 +56,8 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   const [loaded, setLoaded] = useState(false);
   const suppressReloadUntilRef = useRef(0);
 
-  const loadFromDb = useCallback(async () => {
+  const loadFromDb = useCallback(async (force?: boolean) => {
+    if (!force && Date.now() < suppressReloadUntilRef.current) return;
     if (!user) { setLoaded(true); return; }
     const { data } = await supabase
       .from("user_settings")
