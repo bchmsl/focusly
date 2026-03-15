@@ -69,6 +69,9 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
         autoStartFocus: data.auto_start_focus,
         soundEnabled: data.sound_enabled,
         soundVolume: data.sound_volume,
+        displayMode: (data as any).display_mode ?? "pomodoro",
+        showSeconds: (data as any).show_seconds ?? false,
+        weatherCity: (data as any).weather_city ?? null,
       });
     }
     setLoaded(true);
