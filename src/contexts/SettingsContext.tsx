@@ -2,6 +2,18 @@ import { createContext, useContext, useState, useEffect, useCallback, useRef, ty
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
+export interface CardLayout {
+  order: string[];
+  widths: Record<string, "full" | "half">;
+  collapsed: string[];
+}
+
+const DEFAULT_CARD_LAYOUT: CardLayout = {
+  order: ["clock", "timer", "tasks", "notes"],
+  widths: { clock: "full", timer: "half", tasks: "half", notes: "full" },
+  collapsed: [],
+};
+
 export interface Settings {
   focusDuration: number;
   shortBreakDuration: number;
@@ -17,6 +29,7 @@ export interface Settings {
   showPomodoro: boolean;
   showTasks: boolean;
   showNotes: boolean;
+  cardLayout: CardLayout;
 }
 
 const DEFAULT_SETTINGS: Settings = {
@@ -34,6 +47,7 @@ const DEFAULT_SETTINGS: Settings = {
   showPomodoro: true,
   showTasks: true,
   showNotes: true,
+  cardLayout: DEFAULT_CARD_LAYOUT,
 };
 
 interface SettingsContextType {
@@ -68,6 +82,16 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
       .maybeSingle();
 
     if (data) {
+      const rawLayout = (data as any).card_layout;
+      let cardLayout = DEFAULT_CARD_LAYOUT;
+      if (rawLayout && typeof rawLayout === "object") {
+        cardLayout = {
+          order: Array.isArray(rawLayout.order) ? rawLayout.order : DEFAULT_CARD_LAYOUT.order,
+          widths: rawLayout.widths && typeof rawLayout.widths === "object" ? rawLayout.widths : DEFAULT_CARD_LAYOUT.widths,
+          collapsed: Array.isArray(rawLayout.collapsed) ? rawLayout.collapsed : DEFAULT_CARD_LAYOUT.collapsed,
+        };
+      }
+
       setSettings({
         focusDuration: data.focus_duration,
         shortBreakDuration: data.short_break_duration,
@@ -83,6 +107,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
         showPomodoro: (data as any).show_pomodoro ?? true,
         showTasks: (data as any).show_tasks ?? true,
         showNotes: (data as any).show_notes ?? true,
+        cardLayout,
       });
     }
     setLoaded(true);
@@ -93,7 +118,6 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   const updateSettings = useCallback(async (partial: Partial<Settings>) => {
     const next = { ...settings, ...partial };
     setSettings(next);
-    // Suppress realtime-triggered reloads for 2s after a local update
     suppressReloadUntilRef.current = Date.now() + 2000;
     if (!user) return;
 
@@ -113,6 +137,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
       show_pomodoro: next.showPomodoro,
       show_tasks: next.showTasks,
       show_notes: next.showNotes,
+      card_layout: next.cardLayout,
     } as any, { onConflict: "user_id" });
   }, [settings, user]);
 

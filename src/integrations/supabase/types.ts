@@ -257,6 +257,7 @@ export type Database = {
         Row: {
           auto_start_breaks: boolean
           auto_start_focus: boolean
+          card_layout: Json
           color_mode: string
           created_at: string
           display_mode: string
@@ -279,6 +280,7 @@ export type Database = {
         Insert: {
           auto_start_breaks?: boolean
           auto_start_focus?: boolean
+          card_layout?: Json
           color_mode?: string
           created_at?: string
           display_mode?: string
@@ -301,6 +303,7 @@ export type Database = {
         Update: {
           auto_start_breaks?: boolean
           auto_start_focus?: boolean
+          card_layout?: Json
           color_mode?: string
           created_at?: string
           display_mode?: string
