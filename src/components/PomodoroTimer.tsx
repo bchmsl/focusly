@@ -18,7 +18,7 @@ const MODE_LABELS: Record<TimerMode, string> = {
   longBreak: "Long Break",
 };
 
-const PomodoroTimer = ({ onTimerEnd, reloadRef }: PomodoroTimerProps) => {
+const PomodoroTimer = ({ onTimerEnd, reloadRef, expanded }: PomodoroTimerProps) => {
   const { user } = useAuth();
   const { settings, loaded: settingsLoaded } = useSettings();
 
