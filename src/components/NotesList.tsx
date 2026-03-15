@@ -82,6 +82,10 @@ const NotesList = ({ reloadRef }: { reloadRef?: React.MutableRefObject<(() => vo
     setInput("");
     inputRef.current?.focus();
     await supabase.from("notes").insert({ id, user_id: user.id, title: value, position } as any);
+    // Auto-open edit dialog for the new note
+    setEditNote(newNote);
+    setEditDialogOpen(true);
+    editDialogOpenRef.current = true;
   };
 
   const handleNoteDeleted = (id: string) => {
