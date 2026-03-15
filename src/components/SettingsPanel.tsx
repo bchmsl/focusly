@@ -108,21 +108,19 @@ const SettingsPanel = ({ onTagsChanged }: { onTagsChanged?: () => void }) => {
               />
             </section>
 
-            {/* Clock Settings (only when clock mode) */}
-            {settings.displayMode === "clock" && (
-              <section className="space-y-4">
-                <div className="flex items-center gap-2 text-sm font-medium">
-                  <Clock className="h-4 w-4 text-primary" />
-                  Clock Settings
-                </div>
-                <ToggleRow
-                  label="Show Seconds"
-                  description="Display seconds in the clock (HH:mm:ss)"
-                  checked={settings.showSeconds}
-                  onChange={(v) => updateSettings({ showSeconds: v })}
-                />
-              </section>
-            )}
+            {/* Clock Settings */}
+            <section className="space-y-4">
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <Clock className="h-4 w-4 text-primary" />
+                Clock Settings
+              </div>
+              <ToggleRow
+                label="Show Seconds"
+                description="Display seconds in the clock (HH:mm:ss)"
+                checked={settings.showSeconds}
+                onChange={(v) => updateSettings({ showSeconds: v })}
+              />
+            </section>
 
             {/* Weather */}
             <section className="space-y-4">
