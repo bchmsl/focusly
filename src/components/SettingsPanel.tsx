@@ -106,6 +106,12 @@ const SettingsPanel = ({ onTagsChanged }: { onTagsChanged?: () => void }) => {
                 checked={settings.showTasks}
                 onChange={(v) => updateSettings({ showTasks: v })}
               />
+              <ToggleRow
+                label="Notes"
+                description="Show the notes card"
+                checked={settings.showNotes}
+                onChange={(v) => updateSettings({ showNotes: v })}
+              />
             </section>
 
             {/* Clock Settings */}

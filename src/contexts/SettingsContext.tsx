@@ -112,6 +112,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
       weather_city: next.weatherCity,
       show_pomodoro: next.showPomodoro,
       show_tasks: next.showTasks,
+      show_notes: next.showNotes,
     } as any, { onConflict: "user_id" });
   }, [settings, user]);
 

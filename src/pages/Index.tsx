@@ -143,7 +143,7 @@ const Index = () => {
         )}
 
         {/* Timer & Tasks grid */}
-        {!isClockExpanded && (
+        {!isClockExpanded && !isNotesExpanded && (
           <div className={`grid gap-6 ${settings.showPomodoro && settings.showTasks ? "lg:grid-cols-2 lg:gap-10" : ""}`}>
             {/* Timer card (pomodoro) — always mounted, hidden via CSS */}
             <div
@@ -182,6 +182,27 @@ const Index = () => {
                 <TodoList reloadRef={todoReloadRef} />
               </CollapsibleCard>
             </div>
+          </div>
+        )}
+
+        {/* Notes card */}
+        {!isClockExpanded && !isTimerExpanded && !isTasksExpanded && (
+          <div
+            className={`transition-all duration-300 ${isNotesExpanded ? "fixed inset-4 z-40" : ""}`}
+            style={{ display: (settings as any).showNotes !== false ? undefined : "none" }}
+          >
+            <CollapsibleCard
+              title="Notes"
+              collapsed={!isNotesExpanded && isNotesCollapsed}
+              onToggleCollapse={() => toggleCollapse("notes")}
+              expandable
+              expanded={isNotesExpanded}
+              onToggleExpand={() => toggleExpand("notes")}
+              className={isNotesExpanded ? "h-full flex flex-col overflow-hidden" : ""}
+              contentClassName={isNotesExpanded ? "flex-1 overflow-y-auto" : ""}
+            >
+              <NotesList reloadRef={notesReloadRef} />
+            </CollapsibleCard>
           </div>
         )}
       </main>
