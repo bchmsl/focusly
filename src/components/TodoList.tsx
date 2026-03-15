@@ -24,6 +24,7 @@ interface TagType {
 const TodoList = ({ reloadRef }: { reloadRef?: React.MutableRefObject<(() => void) | null> }) => {
   const { user } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
   const [tags, setTags] = useState<TagType[]>([]);
   const [taskTagMap, setTaskTagMap] = useState<Record<string, string[]>>({});
   const [input, setInput] = useState("");
@@ -51,6 +52,7 @@ const TodoList = ({ reloadRef }: { reloadRef?: React.MutableRefObject<(() => voi
       }
       setTaskTagMap(map);
     }
+    setLoading(false);
   }, [user]);
 
   useEffect(() => { loadTasks(); }, [loadTasks]);
@@ -349,7 +351,12 @@ const TodoList = ({ reloadRef }: { reloadRef?: React.MutableRefObject<(() => voi
 
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="flex flex-col gap-0.5">
-          {pendingTop.length === 0 && completedTop.length === 0 && (
+          {loading ? (
+            <div className="py-10 flex flex-col items-center gap-2">
+              <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+              <p className="text-sm text-muted-foreground">Loading tasks...</p>
+            </div>
+          ) : pendingTop.length === 0 && completedTop.length === 0 && (
             <p className="py-10 text-center text-sm text-muted-foreground">
               {activeFilterTag ? "No tasks with this tag." : "No tasks yet — type above to get started."}
             </p>

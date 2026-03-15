@@ -22,6 +22,7 @@ interface TagType {
 const NotesList = ({ reloadRef }: { reloadRef?: React.MutableRefObject<(() => void) | null> }) => {
   const { user } = useAuth();
   const [notes, setNotes] = useState<Note[]>([]);
+  const [loading, setLoading] = useState(true);
   const [tags, setTags] = useState<TagType[]>([]);
   const [noteTagMap, setNoteTagMap] = useState<Record<string, string[]>>({});
   const [input, setInput] = useState("");
@@ -49,6 +50,7 @@ const NotesList = ({ reloadRef }: { reloadRef?: React.MutableRefObject<(() => vo
       }
       setNoteTagMap(map);
     }
+    setLoading(false);
   }, [user]);
 
   useEffect(() => { loadNotes(); }, [loadNotes]);
@@ -277,7 +279,12 @@ const NotesList = ({ reloadRef }: { reloadRef?: React.MutableRefObject<(() => vo
 
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="flex flex-col gap-0.5">
-          {sortedNotes.length === 0 && (
+          {loading ? (
+            <div className="py-10 flex flex-col items-center gap-2">
+              <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+              <p className="text-sm text-muted-foreground">Loading notes...</p>
+            </div>
+          ) : sortedNotes.length === 0 && (
             <p className="py-10 text-center text-sm text-muted-foreground">
               {activeFilterTag ? "No notes with this tag." : "No notes yet — type above to get started."}
             </p>

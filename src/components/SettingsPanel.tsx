@@ -134,40 +134,48 @@ const SettingsPanel = ({ onTagsChanged }: { onTagsChanged?: () => void }) => {
                 <CloudSun className="h-4 w-4 text-primary" />
                 Weather
               </div>
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">City</span>
-                  <span className="text-[10px] text-muted-foreground">Leave empty for auto-detect</span>
-                </div>
-                <div className="flex gap-2">
-                  <input
-                    value={cityInput}
-                    onChange={(e) => setCityInput(e.target.value)}
-                    onBlur={() => {
-                      const val = cityInput.trim() || null;
-                      if (val !== settings.weatherCity) updateSettings({ weatherCity: val });
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
+              <ToggleRow
+                label="Show Weather"
+                description="Display weather info on the clock card"
+                checked={settings.showWeather}
+                onChange={(v) => updateSettings({ showWeather: v })}
+              />
+              {settings.showWeather && (
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">City</span>
+                    <span className="text-[10px] text-muted-foreground">Leave empty for auto-detect</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      value={cityInput}
+                      onChange={(e) => setCityInput(e.target.value)}
+                      onBlur={() => {
                         const val = cityInput.trim() || null;
                         if (val !== settings.weatherCity) updateSettings({ weatherCity: val });
-                        (e.target as HTMLInputElement).blur();
-                      }
-                    }}
-                    placeholder="e.g. Tokyo, London..."
-                    className="flex-1 rounded-lg border bg-card px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20"
-                  />
-                  {settings.weatherCity && (
-                    <button
-                      onClick={() => { setCityInput(""); updateSettings({ weatherCity: null }); }}
-                      className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-                    >
-                      <MapPin className="h-3 w-3" />
-                      Auto
-                    </button>
-                  )}
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          const val = cityInput.trim() || null;
+                          if (val !== settings.weatherCity) updateSettings({ weatherCity: val });
+                          (e.target as HTMLInputElement).blur();
+                        }
+                      }}
+                      placeholder="e.g. Tokyo, London..."
+                      className="flex-1 rounded-lg border bg-card px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20"
+                    />
+                    {settings.weatherCity && (
+                      <button
+                        onClick={() => { setCityInput(""); updateSettings({ weatherCity: null }); }}
+                        className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                      >
+                        <MapPin className="h-3 w-3" />
+                        Auto
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
             </section>
 
             {/* Timer Durations & Automation (pomodoro only) */}

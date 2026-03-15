@@ -28,6 +28,7 @@ export interface Settings {
   displayMode: "pomodoro" | "clock";
   showSeconds: boolean;
   weatherCity: string | null;
+  showWeather: boolean;
   showPomodoro: boolean;
   showTasks: boolean;
   showNotes: boolean;
@@ -46,6 +47,7 @@ const DEFAULT_SETTINGS: Settings = {
   displayMode: "pomodoro",
   showSeconds: false,
   weatherCity: null,
+  showWeather: true,
   showPomodoro: true,
   showTasks: true,
   showNotes: true,
@@ -118,6 +120,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
         displayMode: (data as any).display_mode ?? "pomodoro",
         showSeconds: (data as any).show_seconds ?? false,
         weatherCity: (data as any).weather_city ?? null,
+        showWeather: (data as any).show_weather ?? true,
         showPomodoro: (data as any).show_pomodoro ?? true,
         showTasks: (data as any).show_tasks ?? true,
         showNotes: (data as any).show_notes ?? true,
@@ -148,6 +151,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
       display_mode: next.displayMode,
       show_seconds: next.showSeconds,
       weather_city: next.weatherCity,
+      show_weather: next.showWeather,
       show_pomodoro: next.showPomodoro,
       show_tasks: next.showTasks,
       show_notes: next.showNotes,
