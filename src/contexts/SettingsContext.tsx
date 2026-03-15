@@ -3,15 +3,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
 export interface CardLayout {
-  left: string[];
-  right: string[];
+  order: string[];
   widths: Record<string, "full" | "half">;
   collapsed: string[];
 }
 
 const DEFAULT_CARD_LAYOUT: CardLayout = {
-  left: ["timer"],
-  right: ["tasks", "notes"],
+  order: ["timer", "tasks", "notes"],
   widths: { timer: "half", tasks: "half", notes: "half" },
   collapsed: [],
 };
@@ -71,30 +69,25 @@ export const useSettings = () => useContext(SettingsContext);
 function parseCardLayout(raw: any): CardLayout {
   if (!raw || typeof raw !== "object") return DEFAULT_CARD_LAYOUT;
 
-  // Migration: convert old flat `order` format to two-column
-  if (Array.isArray(raw.order) && !raw.left && !raw.right) {
-    const order = raw.order.filter((c: string) => c !== "clock") as string[];
+  // Migration: convert old two-column `left/right` format to flat order
+  if (Array.isArray(raw.left) && Array.isArray(raw.right) && !Array.isArray(raw.order)) {
+    const order = [...raw.left, ...raw.right].filter((c: string) => c !== "clock");
     const widths = raw.widths && typeof raw.widths === "object" ? raw.widths : DEFAULT_CARD_LAYOUT.widths;
     const collapsed = Array.isArray(raw.collapsed) ? raw.collapsed : [];
-    // Split: first half-width pair goes left/right, rest goes right
-    const left: string[] = [];
-    const right: string[] = [];
-    for (const card of order) {
-      if (left.length === 0 || (widths[card] === "half" && left.length <= right.length)) {
-        left.push(card);
-      } else {
-        right.push(card);
-      }
-    }
-    return { left, right, widths, collapsed };
+    return { order, widths, collapsed };
   }
 
-  return {
-    left: Array.isArray(raw.left) ? raw.left : DEFAULT_CARD_LAYOUT.left,
-    right: Array.isArray(raw.right) ? raw.right : DEFAULT_CARD_LAYOUT.right,
-    widths: raw.widths && typeof raw.widths === "object" ? raw.widths : DEFAULT_CARD_LAYOUT.widths,
-    collapsed: Array.isArray(raw.collapsed) ? raw.collapsed : [],
-  };
+  // Current format with `order`
+  if (Array.isArray(raw.order)) {
+    const order = raw.order.filter((c: string) => c !== "clock");
+    return {
+      order,
+      widths: raw.widths && typeof raw.widths === "object" ? raw.widths : DEFAULT_CARD_LAYOUT.widths,
+      collapsed: Array.isArray(raw.collapsed) ? raw.collapsed : [],
+    };
+  }
+
+  return DEFAULT_CARD_LAYOUT;
 }
 
 export const SettingsProvider = ({ children }: { children: ReactNode }) => {

@@ -42,8 +42,7 @@ const Index = () => {
 
   // Local layout state for instant UI updates
   const [localLayout, setLocalLayout] = useState<CardLayout>(() => ({
-    left: settings.cardLayout?.left ?? ["timer"],
-    right: settings.cardLayout?.right ?? ["tasks", "notes"],
+    order: settings.cardLayout?.order ?? ["timer", "tasks", "notes"],
     widths: settings.cardLayout?.widths ?? { timer: "half", tasks: "half", notes: "half" },
     collapsed: settings.cardLayout?.collapsed ?? [],
   }));
@@ -51,7 +50,7 @@ const Index = () => {
   localLayoutRef.current = localLayout;
 
   useEffect(() => {
-    if (settings.cardLayout?.left && settings.cardLayout?.right) {
+    if (settings.cardLayout?.order) {
       setLocalLayout(settings.cardLayout);
     }
   }, [settings.cardLayout]);
@@ -99,75 +98,31 @@ const Index = () => {
     return false;
   }, [settings.showPomodoro, settings.showTasks, settings.showNotes]);
 
-  // Filter columns to only visible cards
-  const leftCards = localLayout.left.filter(isVisible) as CardId[];
-  const rightCards = localLayout.right.filter(isVisible) as CardId[];
+  // Visible cards in order
+  const visibleCards = localLayout.order.filter(isVisible) as CardId[];
 
-  // DnD handler for cross-column movement
+  // DnD handler
   const onCardDragEnd = useCallback((result: DropResult) => {
     if (!result.destination) return;
-    const { source, destination, draggableId } = result;
+    const { source, destination } = result;
+    if (source.index === destination.index) return;
 
-    const getColumn = (id: string) => {
-      const cur = localLayoutRef.current;
-      // Use all items (including hidden) for correct ordering
-      if (id === "col-left") return [...cur.left];
-      if (id === "col-right") return [...cur.right];
-      return [];
-    };
+    const cur = localLayoutRef.current;
+    const visible = cur.order.filter(isVisible);
+    const draggedCard = visible[source.index];
+    const targetCard = visible[destination.index];
+    if (!draggedCard || !targetCard) return;
 
-    const sourceCol = getColumn(source.droppableId);
-    const destCol = getColumn(destination.droppableId);
-
-    if (source.droppableId === destination.droppableId) {
-      // Reorder within same column — map visible index to actual index
-      const visibleItems = sourceCol.filter(isVisible);
-      const draggedCard = visibleItems[source.index];
-      const targetCard = visibleItems[destination.index];
-      if (!draggedCard || draggedCard === targetCard) return;
-
-      // Remove dragged from source column
-      const col = sourceCol.filter((c) => c !== draggedCard);
-      // Insert at target position
-      const targetIdx = col.indexOf(targetCard);
-      if (destination.index > source.index) {
-        col.splice(targetIdx + 1, 0, draggedCard);
-      } else {
-        col.splice(targetIdx, 0, draggedCard);
-      }
-
-      const cur = localLayoutRef.current;
-      if (source.droppableId === "col-left") {
-        updateLocalLayout({ ...cur, left: col });
-      } else {
-        updateLocalLayout({ ...cur, right: col });
-      }
+    // Reorder in full order array
+    const newOrder = cur.order.filter((c) => c !== draggedCard);
+    const targetIdx = newOrder.indexOf(targetCard);
+    if (destination.index > source.index) {
+      newOrder.splice(targetIdx + 1, 0, draggedCard);
     } else {
-      // Move between columns
-      const visibleSource = sourceCol.filter(isVisible);
-      const draggedCard = visibleSource[source.index];
-      if (!draggedCard) return;
-
-      const newSource = sourceCol.filter((c) => c !== draggedCard);
-      const visibleDest = destCol.filter(isVisible);
-      const targetCard = visibleDest[destination.index];
-
-      let newDest: string[];
-      if (targetCard) {
-        const targetIdx = destCol.indexOf(targetCard);
-        newDest = [...destCol];
-        newDest.splice(targetIdx, 0, draggedCard);
-      } else {
-        newDest = [...destCol, draggedCard];
-      }
-
-      const cur = localLayoutRef.current;
-      if (source.droppableId === "col-left") {
-        updateLocalLayout({ ...cur, left: newSource, right: newDest });
-      } else {
-        updateLocalLayout({ ...cur, left: newDest, right: newSource });
-      }
+      newOrder.splice(targetIdx, 0, draggedCard);
     }
+
+    updateLocalLayout({ ...cur, order: newOrder });
   }, [isVisible, updateLocalLayout]);
 
   // Realtime & reload
@@ -244,7 +199,7 @@ const Index = () => {
           <div
             ref={provided.innerRef}
             {...provided.draggableProps}
-            className={`${snapshot.isDragging ? "opacity-90 z-50" : ""}`}
+            className={`${isFullWidth ? "lg:col-span-2" : "lg:col-span-1"} ${snapshot.isDragging ? "opacity-90 z-50" : ""}`}
           >
             <CollapsibleCard
               title={CARD_LABELS[card]}
@@ -266,31 +221,6 @@ const Index = () => {
       </Draggable>
     );
   };
-
-  // Render a column droppable
-  const renderColumn = (columnId: string, cards: CardId[]) => (
-    <Droppable droppableId={columnId}>
-      {(provided, snapshot) => (
-        <div
-          ref={provided.innerRef}
-          {...provided.droppableProps}
-          className={`flex flex-col gap-6 min-h-[80px] rounded-xl transition-colors ${
-            snapshot.isDraggingOver ? "bg-primary/5 ring-2 ring-primary/10 ring-inset" : ""
-          }`}
-        >
-          {cards.length === 0 && !snapshot.isDraggingOver && (
-            <div className="flex items-center justify-center py-12 rounded-xl border-2 border-dashed border-border/40 text-muted-foreground/40 text-xs">
-              Drop cards here
-            </div>
-          )}
-          {cards.map((card, index) => renderDraggableCard(card, index))}
-          {provided.placeholder}
-        </div>
-      )}
-    </Droppable>
-  );
-
-  const hasAnyCards = leftCards.length > 0 || rightCards.length > 0;
 
   return (
     <div className="min-h-screen bg-background">
@@ -365,13 +295,21 @@ const Index = () => {
           </CollapsibleCard>
         )}
 
-        {/* Two-column layout with drag-and-drop */}
-        {!expandedCard && hasAnyCards && (
+        {/* Single grid with drag-and-drop */}
+        {!expandedCard && visibleCards.length > 0 && (
           <DragDropContext onDragEnd={onCardDragEnd}>
-            <div className="grid gap-6 lg:grid-cols-2 lg:gap-10">
-              {renderColumn("col-left", leftCards)}
-              {renderColumn("col-right", rightCards)}
-            </div>
+            <Droppable droppableId="cards" direction="vertical">
+              {(provided) => (
+                <div
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
+                  className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+                >
+                  {visibleCards.map((card, index) => renderDraggableCard(card, index))}
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
           </DragDropContext>
         )}
       </main>
