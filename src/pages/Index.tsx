@@ -2,6 +2,7 @@ import { useCallback, useState, useEffect, useRef } from "react";
 import PomodoroTimer from "@/components/PomodoroTimer";
 import ClockDisplay from "@/components/ClockDisplay";
 import TodoList from "@/components/TodoList";
+import NotesList from "@/components/NotesList";
 import { Timer, LogOut, Bell, BellOff, Maximize2, Minimize2, ChevronDown, ChevronUp } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import SettingsPanel from "@/components/SettingsPanel";
