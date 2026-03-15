@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -54,8 +54,10 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [loaded, setLoaded] = useState(false);
+  const suppressReloadUntilRef = useRef(0);
 
-  const loadFromDb = useCallback(async () => {
+  const loadFromDb = useCallback(async (force?: boolean) => {
+    if (!force && Date.now() < suppressReloadUntilRef.current) return;
     if (!user) { setLoaded(true); return; }
     const { data } = await supabase
       .from("user_settings")
@@ -88,6 +90,8 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   const updateSettings = useCallback(async (partial: Partial<Settings>) => {
     const next = { ...settings, ...partial };
     setSettings(next);
+    // Suppress realtime-triggered reloads for 2s after a local update
+    suppressReloadUntilRef.current = Date.now() + 2000;
     if (!user) return;
 
     await supabase.from("user_settings").upsert({
