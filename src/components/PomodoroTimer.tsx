@@ -296,7 +296,7 @@ const PomodoroTimer = ({ onTimerEnd, reloadRef, expanded }: PomodoroTimerProps) 
 
       {/* Timer circle */}
       <div className="relative flex items-center justify-center">
-        <svg className={`${expanded ? "h-56 w-56 sm:h-64 sm:w-64 md:h-72 md:w-72 lg:h-80 lg:w-80" : "h-56 w-56"} -rotate-90 transition-all shrink-0`} viewBox="0 0 200 200">
+        <svg className={`${expanded ? "h-[68vmin] w-[68vmin] max-h-[30rem] max-w-[30rem] min-h-[15rem] min-w-[15rem]" : "h-56 w-56"} -rotate-90 transition-all shrink-0`} viewBox="0 0 200 200">
           <circle cx="100" cy="100" r="90" fill="none" stroke="hsl(var(--accent))" strokeWidth="6" />
           <circle
             cx="100" cy="100" r="90" fill="none"
