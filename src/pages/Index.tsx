@@ -41,7 +41,12 @@ const Index = () => {
   const [expandedCard, setExpandedCard] = useState<CardId | null>(null);
 
   // Local layout state for instant UI updates
-  const [localLayout, setLocalLayout] = useState<CardLayout>(settings.cardLayout);
+  const [localLayout, setLocalLayout] = useState<CardLayout>(() => ({
+    left: settings.cardLayout?.left ?? ["timer"],
+    right: settings.cardLayout?.right ?? ["tasks", "notes"],
+    widths: settings.cardLayout?.widths ?? { timer: "half", tasks: "half", notes: "half" },
+    collapsed: settings.cardLayout?.collapsed ?? [],
+  }));
   const localLayoutRef = useRef(localLayout);
   localLayoutRef.current = localLayout;
 
