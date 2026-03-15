@@ -165,7 +165,7 @@ const SettingsPanel = ({ onTagsChanged }: { onTagsChanged?: () => void }) => {
             </section>
 
             {/* Timer Durations & Automation (pomodoro only) */}
-            {settings.displayMode === "pomodoro" && (
+            {settings.showPomodoro && (
               <>
                 <section className="space-y-4">
                   <div className="flex items-center gap-2 text-sm font-medium">
