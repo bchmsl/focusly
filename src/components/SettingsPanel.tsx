@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Settings, X, Volume2, VolumeX, Clock, Zap, Tag, Trash2, Pencil, Check, Monitor, CloudSun, MapPin } from "lucide-react";
 import { useSettings } from "@/contexts/SettingsContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -350,18 +350,13 @@ const DurationSlider = ({
   </div>
 );
 
-const ToggleRow = ({
-  label,
-  description,
-  checked,
-  onChange,
-}: {
+const ToggleRow = React.forwardRef<HTMLDivElement, {
   label: string;
   description: string;
   checked: boolean;
   onChange: (v: boolean) => void;
-}) => (
-  <div className="flex items-start justify-between gap-4">
+}>(({ label, description, checked, onChange }, ref) => (
+  <div ref={ref} className="flex items-start justify-between gap-4">
     <div>
       <p className="text-sm">{label}</p>
       <p className="text-xs text-muted-foreground">{description}</p>
@@ -379,6 +374,6 @@ const ToggleRow = ({
       />
     </button>
   </div>
-);
+));
 
 export default SettingsPanel;
