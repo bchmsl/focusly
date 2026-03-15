@@ -22,6 +22,7 @@ interface TagType {
 const NotesList = ({ reloadRef }: { reloadRef?: React.MutableRefObject<(() => void) | null> }) => {
   const { user } = useAuth();
   const [notes, setNotes] = useState<Note[]>([]);
+  const [loading, setLoading] = useState(true);
   const [tags, setTags] = useState<TagType[]>([]);
   const [noteTagMap, setNoteTagMap] = useState<Record<string, string[]>>({});
   const [input, setInput] = useState("");

@@ -24,6 +24,7 @@ interface TagType {
 const TodoList = ({ reloadRef }: { reloadRef?: React.MutableRefObject<(() => void) | null> }) => {
   const { user } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
   const [tags, setTags] = useState<TagType[]>([]);
   const [taskTagMap, setTaskTagMap] = useState<Record<string, string[]>>({});
   const [input, setInput] = useState("");
