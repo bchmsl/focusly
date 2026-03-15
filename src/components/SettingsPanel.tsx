@@ -350,17 +350,12 @@ const DurationSlider = ({
   </div>
 );
 
-const ToggleRow = ({
-  label,
-  description,
-  checked,
-  onChange,
-}: {
+const ToggleRow = React.forwardRef<HTMLDivElement, {
   label: string;
   description: string;
   checked: boolean;
   onChange: (v: boolean) => void;
-}) => (
+}>(({ label, description, checked, onChange }, ref) => (
   <div className="flex items-start justify-between gap-4">
     <div>
       <p className="text-sm">{label}</p>
