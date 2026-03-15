@@ -296,7 +296,7 @@ const PomodoroTimer = ({ onTimerEnd, reloadRef, expanded }: PomodoroTimerProps) 
 
       {/* Timer circle */}
       <div className="relative flex items-center justify-center">
-        <svg className="h-56 w-56 -rotate-90" viewBox="0 0 200 200">
+        <svg className={`${expanded ? "h-80 w-80 lg:h-[28rem] lg:w-[28rem]" : "h-56 w-56"} -rotate-90 transition-all`} viewBox="0 0 200 200">
           <circle cx="100" cy="100" r="90" fill="none" stroke="hsl(var(--accent))" strokeWidth="6" />
           <circle
             cx="100" cy="100" r="90" fill="none"
@@ -308,10 +308,10 @@ const PomodoroTimer = ({ onTimerEnd, reloadRef, expanded }: PomodoroTimerProps) 
           />
         </svg>
         <div className="absolute flex flex-col items-center">
-          <span className={`font-mono-timer text-5xl font-bold ${isRunning ? "timer-pulse" : ""}`}>
+          <span className={`font-mono-timer font-bold ${isRunning ? "timer-pulse" : ""} ${expanded ? "text-7xl lg:text-8xl" : "text-5xl"} transition-all`}>
             {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
           </span>
-          <span className="mt-1 text-sm font-medium text-muted-foreground">
+          <span className={`mt-1 font-medium text-muted-foreground ${expanded ? "text-lg" : "text-sm"}`}>
             {MODE_LABELS[mode]}
           </span>
         </div>

@@ -19,7 +19,7 @@ interface TagType {
   emoji: string | null;
 }
 
-const NotesList = ({ reloadRef }: { reloadRef?: React.MutableRefObject<(() => void) | null> }) => {
+const NotesList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject<(() => void) | null>; expanded?: boolean }) => {
   const { user } = useAuth();
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);

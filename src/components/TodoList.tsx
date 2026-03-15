@@ -21,7 +21,7 @@ interface TagType {
   emoji: string | null;
 }
 
-const TodoList = ({ reloadRef }: { reloadRef?: React.MutableRefObject<(() => void) | null> }) => {
+const TodoList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject<(() => void) | null>; expanded?: boolean }) => {
   const { user } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
