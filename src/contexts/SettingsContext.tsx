@@ -3,13 +3,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
 export interface CardLayout {
-  order: string[];
+  left: string[];
+  right: string[];
   widths: Record<string, "full" | "half">;
   collapsed: string[];
 }
 
 const DEFAULT_CARD_LAYOUT: CardLayout = {
-  order: ["timer", "tasks", "notes"],
+  left: ["timer"],
+  right: ["tasks", "notes"],
   widths: { timer: "half", tasks: "half", notes: "half" },
   collapsed: [],
 };
@@ -69,25 +71,23 @@ export const useSettings = () => useContext(SettingsContext);
 function parseCardLayout(raw: any): CardLayout {
   if (!raw || typeof raw !== "object") return DEFAULT_CARD_LAYOUT;
 
-  // Migration: convert old two-column `left/right` format to flat order
-  if (Array.isArray(raw.left) && Array.isArray(raw.right) && !Array.isArray(raw.order)) {
-    const order = [...raw.left, ...raw.right].filter((c: string) => c !== "clock");
+  // Migration: convert old flat `order` format
+  if (Array.isArray(raw.order) && !raw.left && !raw.right) {
+    const order = raw.order.filter((c: string) => c !== "clock") as string[];
     const widths = raw.widths && typeof raw.widths === "object" ? raw.widths : DEFAULT_CARD_LAYOUT.widths;
     const collapsed = Array.isArray(raw.collapsed) ? raw.collapsed : [];
-    return { order, widths, collapsed };
+    const left: string[] = [];
+    const right: string[] = [];
+    order.forEach((card, i) => (i % 2 === 0 ? left : right).push(card));
+    return { left, right, widths, collapsed };
   }
 
-  // Current format with `order`
-  if (Array.isArray(raw.order)) {
-    const order = raw.order.filter((c: string) => c !== "clock");
-    return {
-      order,
-      widths: raw.widths && typeof raw.widths === "object" ? raw.widths : DEFAULT_CARD_LAYOUT.widths,
-      collapsed: Array.isArray(raw.collapsed) ? raw.collapsed : [],
-    };
-  }
-
-  return DEFAULT_CARD_LAYOUT;
+  return {
+    left: Array.isArray(raw.left) ? raw.left : DEFAULT_CARD_LAYOUT.left,
+    right: Array.isArray(raw.right) ? raw.right : DEFAULT_CARD_LAYOUT.right,
+    widths: raw.widths && typeof raw.widths === "object" ? raw.widths : DEFAULT_CARD_LAYOUT.widths,
+    collapsed: Array.isArray(raw.collapsed) ? raw.collapsed : [],
+  };
 }
 
 export const SettingsProvider = ({ children }: { children: ReactNode }) => {
