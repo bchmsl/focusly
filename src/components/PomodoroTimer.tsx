@@ -330,21 +330,21 @@ const PomodoroTimer = ({ onTimerEnd, reloadRef, expanded }: PomodoroTimerProps) 
       </div>
 
       {/* Controls */}
-      <div className="flex items-center gap-3">
-        <button onClick={handleReset} className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" aria-label="Reset">
-          <RotateCcw className="h-4 w-4" />
+      <div className={`flex items-center ${expanded ? "gap-5" : "gap-3"}`}>
+        <button onClick={handleReset} className={`flex items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground ${expanded ? "h-14 w-14" : "h-10 w-10"}`} aria-label="Reset">
+          <RotateCcw className={expanded ? "h-6 w-6" : "h-4 w-4"} />
         </button>
         <button
           onClick={toggleRunning}
-          className={`flex h-14 w-14 items-center justify-center rounded-full text-primary-foreground transition-all hover:scale-105 active:scale-95 ${
+          className={`flex items-center justify-center rounded-full text-primary-foreground transition-all hover:scale-105 active:scale-95 ${
             isFocus ? "bg-primary" : "bg-secondary"
-          }`}
+          } ${expanded ? "h-20 w-20" : "h-14 w-14"}`}
           aria-label={isRunning ? "Pause" : "Start"}
         >
-          {isRunning ? <Pause className="h-6 w-6" /> : <Play className="ml-0.5 h-6 w-6" />}
+          {isRunning ? <Pause className={expanded ? "h-9 w-9" : "h-6 w-6"} /> : <Play className={`ml-0.5 ${expanded ? "h-9 w-9" : "h-6 w-6"}`} />}
         </button>
-        <button onClick={handleTimerComplete} className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" aria-label="Skip">
-          <SkipForward className="h-4 w-4" />
+        <button onClick={handleTimerComplete} className={`flex items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground ${expanded ? "h-14 w-14" : "h-10 w-10"}`} aria-label="Skip">
+          <SkipForward className={expanded ? "h-6 w-6" : "h-4 w-4"} />
         </button>
       </div>
     </div>

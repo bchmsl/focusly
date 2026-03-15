@@ -226,7 +226,7 @@ const NotesList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className={`flex flex-col gap-4 ${expanded ? "mx-auto w-full max-w-3xl" : ""}`}>
       <form onSubmit={(e) => { e.preventDefault(); addNote(); }} className="flex gap-2">
         <input
           ref={inputRef}
