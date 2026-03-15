@@ -205,7 +205,9 @@ export type Database = {
           long_break_duration: number
           long_break_interval: number
           short_break_duration: number
+          show_pomodoro: boolean
           show_seconds: boolean
+          show_tasks: boolean
           sound_enabled: boolean
           sound_volume: number
           theme_id: string
@@ -224,7 +226,9 @@ export type Database = {
           long_break_duration?: number
           long_break_interval?: number
           short_break_duration?: number
+          show_pomodoro?: boolean
           show_seconds?: boolean
+          show_tasks?: boolean
           sound_enabled?: boolean
           sound_volume?: number
           theme_id?: string
@@ -243,7 +247,9 @@ export type Database = {
           long_break_duration?: number
           long_break_interval?: number
           short_break_duration?: number
+          show_pomodoro?: boolean
           show_seconds?: boolean
+          show_tasks?: boolean
           sound_enabled?: boolean
           sound_volume?: number
           theme_id?: string

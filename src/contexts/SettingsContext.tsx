@@ -3,17 +3,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
 export interface Settings {
-  focusDuration: number;      // minutes
-  shortBreakDuration: number; // minutes
-  longBreakDuration: number;  // minutes
-  longBreakInterval: number;  // every N focus sessions
+  focusDuration: number;
+  shortBreakDuration: number;
+  longBreakDuration: number;
+  longBreakInterval: number;
   autoStartBreaks: boolean;
   autoStartFocus: boolean;
   soundEnabled: boolean;
-  soundVolume: number;        // 0-100
+  soundVolume: number;
   displayMode: "pomodoro" | "clock";
   showSeconds: boolean;
   weatherCity: string | null;
+  showPomodoro: boolean;
+  showTasks: boolean;
 }
 
 const DEFAULT_SETTINGS: Settings = {
@@ -28,6 +30,8 @@ const DEFAULT_SETTINGS: Settings = {
   displayMode: "pomodoro",
   showSeconds: false,
   weatherCity: null,
+  showPomodoro: true,
+  showTasks: true,
 };
 
 interface SettingsContextType {
@@ -72,6 +76,8 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
         displayMode: (data as any).display_mode ?? "pomodoro",
         showSeconds: (data as any).show_seconds ?? false,
         weatherCity: (data as any).weather_city ?? null,
+        showPomodoro: (data as any).show_pomodoro ?? true,
+        showTasks: (data as any).show_tasks ?? true,
       });
     }
     setLoaded(true);
@@ -97,6 +103,8 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
       display_mode: next.displayMode,
       show_seconds: next.showSeconds,
       weather_city: next.weatherCity,
+      show_pomodoro: next.showPomodoro,
+      show_tasks: next.showTasks,
     } as any, { onConflict: "user_id" });
   }, [settings, user]);
 

@@ -22,7 +22,7 @@ const Index = () => {
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const todoReloadRef = useRef<(() => void) | null>(null);
   const timerReloadRef = useRef<(() => void) | null>(null);
-  const [expandedCard, setExpandedCard] = useState<"timer" | "tasks" | null>(null);
+  const [expandedCard, setExpandedCard] = useState<"clock" | "timer" | "tasks" | null>(null);
   const [collapsedCards, setCollapsedCards] = useState<Set<string>>(new Set());
 
   const toggleCollapse = (card: string) => {
@@ -65,10 +65,11 @@ const Index = () => {
     );
   }, [sendNotification]);
 
-  const toggleExpand = (card: "timer" | "tasks") => {
+  const toggleExpand = (card: "clock" | "timer" | "tasks") => {
     setExpandedCard((prev) => (prev === card ? null : card));
   };
 
+  const isClockExpanded = expandedCard === "clock";
   const isTimerExpanded = expandedCard === "timer";
   const isTasksExpanded = expandedCard === "tasks";
   const isClockCollapsed = collapsedCards.has("clock");
@@ -117,54 +118,63 @@ const Index = () => {
         )}
 
         {/* Clock card — always visible, full width */}
-        {!expandedCard && (
-          <CollapsibleCard
-            title="Clock"
-            collapsed={isClockCollapsed}
-            onToggleCollapse={() => toggleCollapse("clock")}
-          >
-            <ClockDisplay />
-          </CollapsibleCard>
+        {(!expandedCard || isClockExpanded) && (
+          <div className={`transition-all duration-300 ${isClockExpanded ? "fixed inset-4 z-40" : ""}`}>
+            <CollapsibleCard
+              title="Clock"
+              collapsed={!isClockExpanded && isClockCollapsed}
+              onToggleCollapse={() => toggleCollapse("clock")}
+              expandable
+              expanded={isClockExpanded}
+              onToggleExpand={() => toggleExpand("clock")}
+              className={isClockExpanded ? "h-full flex flex-col items-center justify-center" : ""}
+              contentClassName={isClockExpanded ? "flex-1 flex items-center justify-center" : ""}
+            >
+              <ClockDisplay expanded={isClockExpanded} />
+            </CollapsibleCard>
+          </div>
         )}
 
         {/* Timer & Tasks grid */}
-        <div className={`grid gap-6 lg:grid-cols-2 lg:gap-10`}>
-          {/* Timer card (pomodoro mode) */}
-          {settings.displayMode === "pomodoro" && !isTasksExpanded && (
-            <div className={`flex flex-col items-center transition-all duration-300 ${isTimerExpanded ? "fixed inset-4 z-40" : ""}`}>
-              <CollapsibleCard
-                title="Pomodoro"
-                collapsed={!isTimerExpanded && isTimerCollapsed}
-                onToggleCollapse={() => toggleCollapse("timer")}
-                expandable
-                expanded={isTimerExpanded}
-                onToggleExpand={() => toggleExpand("timer")}
-                className={isTimerExpanded ? "h-full flex flex-col items-center justify-center" : ""}
-                contentClassName={isTimerExpanded ? "flex-1 flex items-center justify-center" : ""}
-              >
-                <PomodoroTimer onTimerEnd={handleTimerEnd} reloadRef={timerReloadRef} />
-              </CollapsibleCard>
-            </div>
-          )}
+        {!isClockExpanded && (
+          <div className={`grid gap-6 lg:grid-cols-2 lg:gap-10`}>
+            {/* Timer card (pomodoro) */}
+            {settings.showPomodoro && !isTasksExpanded && (
+              <div className={`flex flex-col items-center transition-all duration-300 ${isTimerExpanded ? "fixed inset-4 z-40" : ""}`}>
+                <CollapsibleCard
+                  title="Pomodoro"
+                  collapsed={!isTimerExpanded && isTimerCollapsed}
+                  onToggleCollapse={() => toggleCollapse("timer")}
+                  expandable
+                  expanded={isTimerExpanded}
+                  onToggleExpand={() => toggleExpand("timer")}
+                  className={isTimerExpanded ? "h-full flex flex-col items-center justify-center" : ""}
+                  contentClassName={isTimerExpanded ? "flex-1 flex items-center justify-center" : ""}
+                >
+                  <PomodoroTimer onTimerEnd={handleTimerEnd} reloadRef={timerReloadRef} />
+                </CollapsibleCard>
+              </div>
+            )}
 
-          {/* Tasks card */}
-          {!isTimerExpanded && (
-            <div className={`flex flex-col transition-all duration-300 ${isTasksExpanded ? "fixed inset-4 z-40" : settings.displayMode !== "pomodoro" ? "lg:col-span-2" : ""}`}>
-              <CollapsibleCard
-                title="Tasks"
-                collapsed={!isTasksExpanded && isTasksCollapsed}
-                onToggleCollapse={() => toggleCollapse("tasks")}
-                expandable
-                expanded={isTasksExpanded}
-                onToggleExpand={() => toggleExpand("tasks")}
-                className={isTasksExpanded ? "h-full flex flex-col overflow-hidden" : ""}
-                contentClassName={isTasksExpanded ? "flex-1 overflow-y-auto" : ""}
-              >
-                <TodoList reloadRef={todoReloadRef} />
-              </CollapsibleCard>
-            </div>
-          )}
-        </div>
+            {/* Tasks card */}
+            {settings.showTasks && !isTimerExpanded && (
+              <div className={`flex flex-col transition-all duration-300 ${isTasksExpanded ? "fixed inset-4 z-40" : !settings.showPomodoro ? "lg:col-span-2" : ""}`}>
+                <CollapsibleCard
+                  title="Tasks"
+                  collapsed={!isTasksExpanded && isTasksCollapsed}
+                  onToggleCollapse={() => toggleCollapse("tasks")}
+                  expandable
+                  expanded={isTasksExpanded}
+                  onToggleExpand={() => toggleExpand("tasks")}
+                  className={isTasksExpanded ? "h-full flex flex-col overflow-hidden" : ""}
+                  contentClassName={isTasksExpanded ? "flex-1 overflow-y-auto" : ""}
+                >
+                  <TodoList reloadRef={todoReloadRef} />
+                </CollapsibleCard>
+              </div>
+            )}
+          </div>
+        )}
       </main>
     </div>
   );
