@@ -270,6 +270,7 @@ export type Database = {
           show_pomodoro: boolean
           show_seconds: boolean
           show_tasks: boolean
+          show_weather: boolean
           sound_enabled: boolean
           sound_volume: number
           theme_id: string
@@ -293,6 +294,7 @@ export type Database = {
           show_pomodoro?: boolean
           show_seconds?: boolean
           show_tasks?: boolean
+          show_weather?: boolean
           sound_enabled?: boolean
           sound_volume?: number
           theme_id?: string
@@ -316,6 +318,7 @@ export type Database = {
           show_pomodoro?: boolean
           show_seconds?: boolean
           show_tasks?: boolean
+          show_weather?: boolean
           sound_enabled?: boolean
           sound_volume?: number
           theme_id?: string
