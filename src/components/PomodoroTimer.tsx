@@ -252,29 +252,29 @@ const PomodoroTimer = ({ onTimerEnd, reloadRef, expanded }: PomodoroTimerProps) 
   // Show loading skeleton until timer state is loaded from DB
   if (timeLeft === null) {
     return (
-      <div className={`flex flex-col items-center overflow-hidden ${expanded ? "gap-6 lg:gap-8 justify-center h-full" : "gap-8"}`}>
+      <div className="flex flex-col items-center gap-8">
         <div className="flex gap-1 rounded-lg bg-muted p-1">
           {["Focus", "Short Break", "Long Break"].map((label) => (
             <div key={label} className="rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground">{label}</div>
           ))}
         </div>
         <div className="relative flex items-center justify-center">
-          <svg className={`${expanded ? "h-[68vmin] w-[68vmin] max-h-[30rem] max-w-[30rem] min-h-[15rem] min-w-[15rem]" : "h-56 w-56"} -rotate-90 transition-all shrink-0`} viewBox="0 0 200 200">
+          <svg className="h-56 w-56 -rotate-90" viewBox="0 0 200 200">
             <circle cx="100" cy="100" r="90" fill="none" stroke="hsl(var(--accent))" strokeWidth="6" />
           </svg>
           <div className="absolute flex flex-col items-center">
-            <span className={`font-mono-timer font-bold text-muted-foreground/30 ${expanded ? "text-7xl lg:text-8xl" : "text-5xl"}`}>--:--</span>
-            <span className={`mt-1 font-medium text-muted-foreground ${expanded ? "text-lg" : "text-sm"}`}>Loading</span>
+            <span className="font-mono-timer text-5xl font-bold text-muted-foreground/30">--:--</span>
+            <span className="mt-1 text-sm font-medium text-muted-foreground">Loading</span>
           </div>
         </div>
-        <div className={`flex ${expanded ? "gap-3" : "gap-2"}`}>{Array.from({ length: settings.longBreakInterval }).map((_, i) => <div key={i} className={`rounded-full bg-accent ${expanded ? "h-3.5 w-3.5" : "h-2.5 w-2.5"}`} />)}</div>
-        <div className={`${expanded ? "h-20" : "h-14"}`} />
+        <div className="h-2.5" />
+        <div className="h-14" />
       </div>
     );
   }
 
   return (
-    <div className={`flex flex-col items-center overflow-hidden ${expanded ? "gap-6 lg:gap-10 justify-center h-full" : "gap-8"}`}>
+    <div className={`flex flex-col items-center ${expanded ? "gap-12" : "gap-8"}`}>
       {/* Mode tabs */}
       <div className="flex gap-1 rounded-lg bg-muted p-1">
         {(["focus", "shortBreak", "longBreak"] as TimerMode[]).map((m) => (
@@ -296,7 +296,7 @@ const PomodoroTimer = ({ onTimerEnd, reloadRef, expanded }: PomodoroTimerProps) 
 
       {/* Timer circle */}
       <div className="relative flex items-center justify-center">
-        <svg className={`${expanded ? "h-[68vmin] w-[68vmin] max-h-[30rem] max-w-[30rem] min-h-[15rem] min-w-[15rem]" : "h-56 w-56"} -rotate-90 transition-all shrink-0`} viewBox="0 0 200 200">
+        <svg className={`${expanded ? "h-80 w-80 lg:h-[28rem] lg:w-[28rem]" : "h-56 w-56"} -rotate-90 transition-all`} viewBox="0 0 200 200">
           <circle cx="100" cy="100" r="90" fill="none" stroke="hsl(var(--accent))" strokeWidth="6" />
           <circle
             cx="100" cy="100" r="90" fill="none"
