@@ -65,7 +65,7 @@ const Index = () => {
     );
   }, [sendNotification]);
 
-  const toggleExpand = (card: "timer" | "tasks") => {
+  const toggleExpand = (card: "clock" | "timer" | "tasks") => {
     setExpandedCard((prev) => (prev === card ? null : card));
   };
 
