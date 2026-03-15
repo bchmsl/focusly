@@ -94,6 +94,9 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
       auto_start_focus: next.autoStartFocus,
       sound_enabled: next.soundEnabled,
       sound_volume: next.soundVolume,
+      display_mode: next.displayMode,
+      show_seconds: next.showSeconds,
+      weather_city: next.weatherCity,
     } as any, { onConflict: "user_id" });
   }, [settings, user]);
 
