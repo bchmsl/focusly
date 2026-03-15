@@ -70,7 +70,7 @@ const Index = () => {
     );
   }, [sendNotification]);
 
-  const toggleExpand = (card: "clock" | "timer" | "tasks") => {
+  const toggleExpand = (card: "clock" | "timer" | "tasks" | "notes") => {
     setExpandedCard((prev) => (prev === card ? null : card));
   };
 
