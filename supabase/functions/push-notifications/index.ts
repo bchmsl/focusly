@@ -168,7 +168,7 @@ async function encryptPayload(
   // PRK from auth
   const prkAuth = await crypto.subtle.importKey(
     "raw",
-    authBytes,
+    authBytes.buffer as ArrayBuffer,
     { name: "HMAC", hash: "SHA-256" },
     false,
     ["sign"]
