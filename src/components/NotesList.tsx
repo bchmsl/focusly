@@ -31,6 +31,7 @@ const NotesList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject
   const [editNote, setEditNote] = useState<Note | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const editDialogOpenRef = useRef(false);
+  const deletedRef = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const loadNotes = useCallback(async () => {
@@ -91,6 +92,7 @@ const NotesList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject
   };
 
   const handleNoteDeleted = (id: string) => {
+    deletedRef.current = true;
     setNotes((prev) => prev.filter((n) => n.id !== id));
   };
 
@@ -320,8 +322,10 @@ const NotesList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject
           setEditDialogOpen(open);
           editDialogOpenRef.current = open;
           if (!open) {
+            const wasDelete = deletedRef.current;
+            deletedRef.current = false;
             setEditNote(null);
-            loadNotes();
+            if (!wasDelete) loadNotes();
           }
         }}
         tags={tags}

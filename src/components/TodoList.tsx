@@ -33,6 +33,7 @@ const TodoList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject<
   const [editTask, setEditTask] = useState<Task | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const editDialogOpenRef = useRef(false);
+  const deletedRef = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const loadTasks = useCallback(async () => {
@@ -112,6 +113,7 @@ const TodoList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject<
   };
 
   const handleTaskDeleted = (id: string) => {
+    deletedRef.current = true;
     setTasks((prev) => prev.filter((t) => t.id !== id && t.parent_id !== id));
     setExpandedIds((prev) => { const next = new Set(prev); next.delete(id); return next; });
   };
@@ -408,8 +410,10 @@ const TodoList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject<
           setEditDialogOpen(open);
           editDialogOpenRef.current = open;
           if (!open) {
+            const wasDelete = deletedRef.current;
+            deletedRef.current = false;
             setEditTask(null);
-            loadTasks();
+            if (!wasDelete) loadTasks();
           }
         }}
         tasks={tasks}
