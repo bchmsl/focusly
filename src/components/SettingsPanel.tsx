@@ -32,7 +32,7 @@ const SettingsPanel = ({ onTagsChanged }: { onTagsChanged?: () => void }) => {
     if (data) setTags(data as TagType[]);
   }, [user]);
 
-  useEffect(() => { if (open) loadTags(); }, [open, loadTags]);
+  useEffect(() => { if (open) { loadTags(); setCityInput(settings.weatherCity || ""); } }, [open, loadTags, settings.weatherCity]);
 
   const startEditTag = (tag: TagType) => {
     setEditingTagId(tag.id);
