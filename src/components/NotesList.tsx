@@ -92,6 +92,7 @@ const NotesList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject
   };
 
   const handleNoteDeleted = (id: string) => {
+    deletedRef.current = true;
     setNotes((prev) => prev.filter((n) => n.id !== id));
   };
 
