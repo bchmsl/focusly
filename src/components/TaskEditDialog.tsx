@@ -170,8 +170,8 @@ const TaskEditDialog = ({
 
   const deleteTask = async () => {
     onTaskDeleted(task.id);
-    onOpenChange(false);
     await supabase.from("tasks").delete().eq("id", task.id);
+    onOpenChange(false);
   };
 
   const handleOpenChange = async (newOpen: boolean) => {

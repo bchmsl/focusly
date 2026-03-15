@@ -118,8 +118,8 @@ const NoteEditDialog = ({
 
   const deleteNote = async () => {
     onNoteDeleted(note.id);
-    onOpenChange(false);
     await supabase.from("notes").delete().eq("id", note.id);
+    onOpenChange(false);
   };
 
   const handleOpenChange = async (newOpen: boolean) => {
