@@ -54,6 +54,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [loaded, setLoaded] = useState(false);
+  const suppressReloadUntilRef = useRef(0);
 
   const loadFromDb = useCallback(async () => {
     if (!user) { setLoaded(true); return; }
