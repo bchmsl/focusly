@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSettings } from "@/contexts/SettingsContext";
+import { supabase } from "@/integrations/supabase/client";
 import { CloudSun, Cloud, CloudRain, CloudSnow, Sun, CloudLightning, CloudDrizzle, Thermometer, MapPin, Loader2 } from "lucide-react";
 
 interface WeatherData {
@@ -19,27 +20,12 @@ const WEATHER_ICONS: Record<number, React.ElementType> = {
 };
 
 async function getLocationByIP(): Promise<{ lat: number; lon: number; city: string } | null> {
-  // Try multiple IP geolocation services as fallbacks
-  const services = [
-    async () => {
-      const res = await fetch("https://ipapi.co/json/");
-      const data = await res.json();
-      return { lat: data.latitude, lon: data.longitude, city: data.city || "Your location" };
-    },
-    async () => {
-      const res = await fetch("https://ip-api.com/json/?fields=lat,lon,city");
-      const data = await res.json();
-      return { lat: data.lat, lon: data.lon, city: data.city || "Your location" };
-    },
-  ];
-
-  for (const service of services) {
-    try {
-      const result = await service();
-      if (result.lat && result.lon) return result;
-    } catch {
-      continue;
-    }
+  try {
+    const { data, error } = await supabase.functions.invoke("ip-location");
+    if (error) throw error;
+    if (data?.lat && data?.lon) return data;
+  } catch {
+    // silent fail
   }
   return null;
 }
