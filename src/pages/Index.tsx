@@ -328,7 +328,7 @@ const Index = () => {
               className={getExpandedClasses(expandedCard)}
               contentClassName={getExpandedContentClasses(expandedCard)}
             >
-              {renderCardContent(expandedCard)}
+              {renderCardContent(expandedCard, true)}
             </CollapsibleCard>
           </div>
         )}
