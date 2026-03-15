@@ -40,6 +40,7 @@ const Index = () => {
     await Promise.all([reloadSettings(), reloadTheme()]);
     todoReloadRef.current?.();
     timerReloadRef.current?.();
+    notesReloadRef.current?.();
   }, [reloadSettings, reloadTheme]);
 
   useEffect(() => {
