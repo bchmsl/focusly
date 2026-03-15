@@ -137,7 +137,7 @@ const Index = () => {
 
         {/* Timer & Tasks grid */}
         {!isClockExpanded && (
-          <div className={`grid gap-6 lg:grid-cols-2 lg:gap-10`}>
+          <div className={`grid gap-6 ${settings.showPomodoro && settings.showTasks ? "lg:grid-cols-2 lg:gap-10" : ""}`}>
             {/* Timer card (pomodoro) */}
             {settings.showPomodoro && !isTasksExpanded && (
               <div className={`flex flex-col items-center transition-all duration-300 ${isTimerExpanded ? "fixed inset-4 z-40" : ""}`}>
@@ -157,8 +157,11 @@ const Index = () => {
             )}
 
             {/* Tasks card */}
-            {settings.showTasks && !isTimerExpanded && (
-              <div className={`flex flex-col transition-all duration-300 ${isTasksExpanded ? "fixed inset-4 z-40" : !settings.showPomodoro ? "lg:col-span-2" : ""}`}>
+            {!isTimerExpanded && (
+              <div
+                className={`flex flex-col transition-all duration-300 ${isTasksExpanded ? "fixed inset-4 z-40" : ""}`}
+                style={{ display: settings.showTasks ? undefined : "none" }}
+              >
                 <CollapsibleCard
                   title="Tasks"
                   collapsed={!isTasksExpanded && isTasksCollapsed}
