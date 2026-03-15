@@ -3,14 +3,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
 export interface CardLayout {
-  order: string[];
+  left: string[];
+  right: string[];
   widths: Record<string, "full" | "half">;
   collapsed: string[];
 }
 
 const DEFAULT_CARD_LAYOUT: CardLayout = {
-  order: ["clock", "timer", "tasks", "notes"],
-  widths: { clock: "full", timer: "half", tasks: "half", notes: "full" },
+  left: ["timer"],
+  right: ["tasks", "notes"],
+  widths: { timer: "half", tasks: "half", notes: "half" },
   collapsed: [],
 };
 
@@ -66,6 +68,35 @@ const SettingsContext = createContext<SettingsContextType>({
 
 export const useSettings = () => useContext(SettingsContext);
 
+function parseCardLayout(raw: any): CardLayout {
+  if (!raw || typeof raw !== "object") return DEFAULT_CARD_LAYOUT;
+
+  // Migration: convert old flat `order` format to two-column
+  if (Array.isArray(raw.order) && !raw.left && !raw.right) {
+    const order = raw.order.filter((c: string) => c !== "clock") as string[];
+    const widths = raw.widths && typeof raw.widths === "object" ? raw.widths : DEFAULT_CARD_LAYOUT.widths;
+    const collapsed = Array.isArray(raw.collapsed) ? raw.collapsed : [];
+    // Split: first half-width pair goes left/right, rest goes right
+    const left: string[] = [];
+    const right: string[] = [];
+    for (const card of order) {
+      if (left.length === 0 || (widths[card] === "half" && left.length <= right.length)) {
+        left.push(card);
+      } else {
+        right.push(card);
+      }
+    }
+    return { left, right, widths, collapsed };
+  }
+
+  return {
+    left: Array.isArray(raw.left) ? raw.left : DEFAULT_CARD_LAYOUT.left,
+    right: Array.isArray(raw.right) ? raw.right : DEFAULT_CARD_LAYOUT.right,
+    widths: raw.widths && typeof raw.widths === "object" ? raw.widths : DEFAULT_CARD_LAYOUT.widths,
+    collapsed: Array.isArray(raw.collapsed) ? raw.collapsed : [],
+  };
+}
+
 export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
@@ -82,16 +113,6 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
       .maybeSingle();
 
     if (data) {
-      const rawLayout = (data as any).card_layout;
-      let cardLayout = DEFAULT_CARD_LAYOUT;
-      if (rawLayout && typeof rawLayout === "object") {
-        cardLayout = {
-          order: Array.isArray(rawLayout.order) ? rawLayout.order : DEFAULT_CARD_LAYOUT.order,
-          widths: rawLayout.widths && typeof rawLayout.widths === "object" ? rawLayout.widths : DEFAULT_CARD_LAYOUT.widths,
-          collapsed: Array.isArray(rawLayout.collapsed) ? rawLayout.collapsed : DEFAULT_CARD_LAYOUT.collapsed,
-        };
-      }
-
       setSettings({
         focusDuration: data.focus_duration,
         shortBreakDuration: data.short_break_duration,
@@ -107,7 +128,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
         showPomodoro: (data as any).show_pomodoro ?? true,
         showTasks: (data as any).show_tasks ?? true,
         showNotes: (data as any).show_notes ?? true,
-        cardLayout,
+        cardLayout: parseCardLayout((data as any).card_layout),
       });
     }
     setLoaded(true);
