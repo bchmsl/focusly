@@ -31,6 +31,7 @@ const NotesList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject
   const [editNote, setEditNote] = useState<Note | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const editDialogOpenRef = useRef(false);
+  const deletedRef = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const loadNotes = useCallback(async () => {
