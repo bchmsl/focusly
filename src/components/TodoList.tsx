@@ -113,6 +113,7 @@ const TodoList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject<
   };
 
   const handleTaskDeleted = (id: string) => {
+    deletedRef.current = true;
     setTasks((prev) => prev.filter((t) => t.id !== id && t.parent_id !== id));
     setExpandedIds((prev) => { const next = new Set(prev); next.delete(id); return next; });
   };
