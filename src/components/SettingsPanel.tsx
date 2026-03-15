@@ -88,7 +88,96 @@ const SettingsPanel = ({ onTagsChanged }: { onTagsChanged?: () => void }) => {
 
           {/* Content */}
           <div className="flex-1 overflow-y-auto px-6 py-5 space-y-8">
+            {/* Display Mode */}
+            <section className="space-y-4">
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <Monitor className="h-4 w-4 text-primary" />
+                Display Mode
+              </div>
+              <div className="flex gap-1 rounded-lg bg-muted p-1">
+                <button
+                  onClick={() => updateSettings({ displayMode: "pomodoro" })}
+                  className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                    settings.displayMode === "pomodoro"
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Pomodoro
+                </button>
+                <button
+                  onClick={() => updateSettings({ displayMode: "clock" })}
+                  className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                    settings.displayMode === "clock"
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Clock
+                </button>
+              </div>
+            </section>
+
+            {/* Clock Settings (only when clock mode) */}
+            {settings.displayMode === "clock" && (
+              <section className="space-y-4">
+                <div className="flex items-center gap-2 text-sm font-medium">
+                  <Clock className="h-4 w-4 text-primary" />
+                  Clock Settings
+                </div>
+                <ToggleRow
+                  label="Show Seconds"
+                  description="Display seconds in the clock (HH:mm:ss)"
+                  checked={settings.showSeconds}
+                  onChange={(v) => updateSettings({ showSeconds: v })}
+                />
+              </section>
+            )}
+
+            {/* Weather */}
+            <section className="space-y-4">
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <CloudSun className="h-4 w-4 text-primary" />
+                Weather
+              </div>
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">City</span>
+                  <span className="text-[10px] text-muted-foreground">Leave empty for auto-detect</span>
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    value={cityInput}
+                    onChange={(e) => setCityInput(e.target.value)}
+                    onBlur={() => {
+                      const val = cityInput.trim() || null;
+                      if (val !== settings.weatherCity) updateSettings({ weatherCity: val });
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        const val = cityInput.trim() || null;
+                        if (val !== settings.weatherCity) updateSettings({ weatherCity: val });
+                        (e.target as HTMLInputElement).blur();
+                      }
+                    }}
+                    placeholder="e.g. Tokyo, London..."
+                    className="flex-1 rounded-lg border bg-card px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20"
+                  />
+                  {settings.weatherCity && (
+                    <button
+                      onClick={() => { setCityInput(""); updateSettings({ weatherCity: null }); }}
+                      className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                    >
+                      <MapPin className="h-3 w-3" />
+                      Auto
+                    </button>
+                  )}
+                </div>
+              </div>
+            </section>
+
             {/* Timer Durations */}
+            {settings.displayMode === "pomodoro" && (
             <section className="space-y-4">
               <div className="flex items-center gap-2 text-sm font-medium">
                 <Clock className="h-4 w-4 text-primary" />
