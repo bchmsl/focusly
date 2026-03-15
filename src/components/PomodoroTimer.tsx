@@ -274,7 +274,7 @@ const PomodoroTimer = ({ onTimerEnd, reloadRef, expanded }: PomodoroTimerProps) 
   }
 
   return (
-    <div className="flex flex-col items-center gap-8">
+    <div className={`flex flex-col items-center ${expanded ? "gap-12" : "gap-8"}`}>
       {/* Mode tabs */}
       <div className="flex gap-1 rounded-lg bg-muted p-1">
         {(["focus", "shortBreak", "longBreak"] as TimerMode[]).map((m) => (
