@@ -350,10 +350,17 @@ const Index = () => {
         {/* Two-column layout with drag-and-drop */}
         {!expandedCard && hasAnyCards && (
           <DragDropContext onDragEnd={onCardDragEnd}>
-            <div className="flex gap-6 items-start">
-              {renderColumn("col-left", leftCards)}
-              {renderColumn("col-right", rightCards)}
-            </div>
+            {leftCards.length > 0 && rightCards.length > 0 ? (
+              <div className="flex flex-col lg:flex-row gap-6 items-start">
+                {renderColumn("col-left", leftCards)}
+                {renderColumn("col-right", rightCards)}
+              </div>
+            ) : (
+              <div className="flex gap-6 items-start">
+                {leftCards.length > 0 && renderColumn("col-left", leftCards)}
+                {rightCards.length > 0 && renderColumn("col-right", rightCards)}
+              </div>
+            )}
           </DragDropContext>
         )}
       </main>
