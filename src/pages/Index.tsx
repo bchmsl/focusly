@@ -207,13 +207,16 @@ const CollapsibleCard = ({
   <div className={`w-full rounded-2xl border bg-card shadow-sm relative ${className}`}>
     {/* Header */}
     <div className="flex items-center justify-between px-6 py-3">
-      <button
-        onClick={onToggleCollapse}
-        className="flex items-center gap-2 text-sm font-semibold text-foreground hover:text-foreground/80 transition-colors"
-      >
-        {collapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
-        {title}
-      </button>
+      {!expanded && (
+        <button
+          onClick={onToggleCollapse}
+          className="flex items-center gap-2 text-sm font-semibold text-foreground hover:text-foreground/80 transition-colors"
+        >
+          {collapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
+          {title}
+        </button>
+      )}
+      {expanded && <span className="text-sm font-semibold text-foreground">{title}</span>}
       {expandable && onToggleExpand && (
         <button
           onClick={onToggleExpand}
