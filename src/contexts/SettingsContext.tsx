@@ -16,6 +16,7 @@ export interface Settings {
   weatherCity: string | null;
   showPomodoro: boolean;
   showTasks: boolean;
+  showNotes: boolean;
 }
 
 const DEFAULT_SETTINGS: Settings = {
