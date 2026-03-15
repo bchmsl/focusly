@@ -176,68 +176,29 @@ const SettingsPanel = ({ onTagsChanged }: { onTagsChanged?: () => void }) => {
               </div>
             </section>
 
-            {/* Timer Durations */}
+            {/* Timer Durations & Automation (pomodoro only) */}
             {settings.displayMode === "pomodoro" && (
-            <section className="space-y-4">
-              <div className="flex items-center gap-2 text-sm font-medium">
-                <Clock className="h-4 w-4 text-primary" />
-                Timer Durations
-              </div>
+              <>
+                <section className="space-y-4">
+                  <div className="flex items-center gap-2 text-sm font-medium">
+                    <Clock className="h-4 w-4 text-primary" />
+                    Timer Durations
+                  </div>
+                  <DurationSlider label="Focus" value={settings.focusDuration} min={1} max={90} unit="min" onChange={(v) => updateSettings({ focusDuration: v })} />
+                  <DurationSlider label="Short Break" value={settings.shortBreakDuration} min={1} max={30} unit="min" onChange={(v) => updateSettings({ shortBreakDuration: v })} />
+                  <DurationSlider label="Long Break" value={settings.longBreakDuration} min={1} max={60} unit="min" onChange={(v) => updateSettings({ longBreakDuration: v })} />
+                  <DurationSlider label="Long Break Every" value={settings.longBreakInterval} min={2} max={8} unit="sessions" onChange={(v) => updateSettings({ longBreakInterval: v })} />
+                </section>
 
-              <DurationSlider
-                label="Focus"
-                value={settings.focusDuration}
-                min={1}
-                max={90}
-                unit="min"
-                onChange={(v) => updateSettings({ focusDuration: v })}
-              />
-              <DurationSlider
-                label="Short Break"
-                value={settings.shortBreakDuration}
-                min={1}
-                max={30}
-                unit="min"
-                onChange={(v) => updateSettings({ shortBreakDuration: v })}
-              />
-              <DurationSlider
-                label="Long Break"
-                value={settings.longBreakDuration}
-                min={1}
-                max={60}
-                unit="min"
-                onChange={(v) => updateSettings({ longBreakDuration: v })}
-              />
-              <DurationSlider
-                label="Long Break Every"
-                value={settings.longBreakInterval}
-                min={2}
-                max={8}
-                unit="sessions"
-                onChange={(v) => updateSettings({ longBreakInterval: v })}
-              />
-            </section>
-
-            {/* Auto-Start */}
-            <section className="space-y-4">
-              <div className="flex items-center gap-2 text-sm font-medium">
-                <Zap className="h-4 w-4 text-primary" />
-                Automation
-              </div>
-
-              <ToggleRow
-                label="Auto-start Breaks"
-                description="Automatically start break timer after focus ends"
-                checked={settings.autoStartBreaks}
-                onChange={(v) => updateSettings({ autoStartBreaks: v })}
-              />
-              <ToggleRow
-                label="Auto-start Focus"
-                description="Automatically start focus timer after break ends"
-                checked={settings.autoStartFocus}
-                onChange={(v) => updateSettings({ autoStartFocus: v })}
-              />
-            </section>
+                <section className="space-y-4">
+                  <div className="flex items-center gap-2 text-sm font-medium">
+                    <Zap className="h-4 w-4 text-primary" />
+                    Automation
+                  </div>
+                  <ToggleRow label="Auto-start Breaks" description="Automatically start break timer after focus ends" checked={settings.autoStartBreaks} onChange={(v) => updateSettings({ autoStartBreaks: v })} />
+                  <ToggleRow label="Auto-start Focus" description="Automatically start focus timer after break ends" checked={settings.autoStartFocus} onChange={(v) => updateSettings({ autoStartFocus: v })} />
+                </section>
+              </>
             )}
 
             {/* Sound */}
