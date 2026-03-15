@@ -318,7 +318,7 @@ const TodoList = ({ reloadRef }: { reloadRef?: React.MutableRefObject<(() => voi
 
       {/* Tag filter */}
       {tags.length > 0 && (
-        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
+        <div className="flex items-center gap-1.5 flex-wrap">
           <Filter className="h-3 w-3 shrink-0 text-muted-foreground/40" />
           <button
             onClick={() => setActiveFilterTag(null)}
