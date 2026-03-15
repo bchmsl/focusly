@@ -48,7 +48,7 @@ cd focusly
 npm install
 
 # 3. Configure environment variables
-cp .env.example .env
+cp .env .env
 # Edit .env and fill in your Supabase credentials (see Environment Variables below)
 
 # 4. Start the development server
