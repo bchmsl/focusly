@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Settings, X, Volume2, VolumeX, Clock, Zap, Tag, Trash2, Pencil, Check, Monitor, CloudSun, MapPin } from "lucide-react";
 import { useSettings } from "@/contexts/SettingsContext";
 import { useAuth } from "@/contexts/AuthContext";
