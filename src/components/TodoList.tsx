@@ -31,6 +31,7 @@ const TodoList = ({ reloadRef }: { reloadRef?: React.MutableRefObject<(() => voi
   const [activeFilterTag, setActiveFilterTag] = useState<string | null>(null);
   const [editTask, setEditTask] = useState<Task | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const editDialogOpenRef = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const loadTasks = useCallback(async () => {
