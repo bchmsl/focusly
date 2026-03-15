@@ -14,6 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
+      note_tags: {
+        Row: {
+          note_id: string
+          tag_id: string
+        }
+        Insert: {
+          note_id: string
+          tag_id: string
+        }
+        Update: {
+          note_id?: string
+          tag_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "note_tags_note_id_fkey"
+            columns: ["note_id"]
+            isOneToOne: false
+            referencedRelation: "notes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "note_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notes: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          position: number
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          position?: number
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          position?: number
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       push_config: {
         Row: {
           key: string
@@ -205,6 +265,7 @@ export type Database = {
           long_break_duration: number
           long_break_interval: number
           short_break_duration: number
+          show_notes: boolean
           show_pomodoro: boolean
           show_seconds: boolean
           show_tasks: boolean
@@ -226,6 +287,7 @@ export type Database = {
           long_break_duration?: number
           long_break_interval?: number
           short_break_duration?: number
+          show_notes?: boolean
           show_pomodoro?: boolean
           show_seconds?: boolean
           show_tasks?: boolean
@@ -247,6 +309,7 @@ export type Database = {
           long_break_duration?: number
           long_break_interval?: number
           short_break_duration?: number
+          show_notes?: boolean
           show_pomodoro?: boolean
           show_seconds?: boolean
           show_tasks?: boolean
