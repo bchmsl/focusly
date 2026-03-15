@@ -116,7 +116,7 @@ const ClockDisplay = ({ expanded = false }: { expanded?: boolean }) => {
     <div className={`flex flex-col items-center ${expanded ? "gap-10" : "gap-6"}`}>
       {/* Clock */}
       <div className="flex flex-col items-center">
-        <span className={`font-mono-timer font-bold tracking-tight ${expanded ? "text-[8rem] leading-none" : "text-6xl"}`}>
+        <span className={`font-mono-timer font-bold tracking-tight ${expanded ? "text-5xl sm:text-7xl md:text-[8rem] leading-none" : "text-5xl sm:text-6xl"}`}>
           {hours}:{minutes}
           {settings.showSeconds && (
             <span className={`text-muted-foreground ${expanded ? "text-6xl" : "text-4xl"}`}>:{seconds}</span>
