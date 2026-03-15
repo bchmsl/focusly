@@ -40,17 +40,15 @@ const Index = () => {
   const notesReloadRef = useRef<(() => void) | null>(null);
   const [expandedCard, setExpandedCard] = useState<CardId | null>(null);
 
-  // Local layout state for instant UI updates, synced to DB
+  // Local layout state for instant UI updates
   const [localLayout, setLocalLayout] = useState<CardLayout>(settings.cardLayout);
   const localLayoutRef = useRef(localLayout);
   localLayoutRef.current = localLayout;
 
-  // Sync from settings when they load/reload from DB
   useEffect(() => {
     setLocalLayout(settings.cardLayout);
   }, [settings.cardLayout]);
 
-  // Debounced save to DB
   const saveLayout = useCallback((layout: CardLayout) => {
     if (layoutSaveRef.current) clearTimeout(layoutSaveRef.current);
     layoutSaveRef.current = setTimeout(() => {
@@ -58,9 +56,9 @@ const Index = () => {
     }, 500);
   }, [updateSettings]);
 
-  const updateLocalLayout = useCallback((patch: Partial<CardLayout>) => {
-    const next = { ...localLayoutRef.current, ...patch };
+  const updateLocalLayout = useCallback((next: CardLayout) => {
     setLocalLayout(next);
+    localLayoutRef.current = next;
     saveLayout(next);
   }, [saveLayout]);
 
@@ -75,20 +73,97 @@ const Index = () => {
     });
   }, [saveLayout]);
 
-  const setCardWidth = useCallback((card: string, width: "full" | "half") => {
-    updateLocalLayout({ widths: { ...localLayoutRef.current.widths, [card]: width } });
+  const toggleCardWidth = useCallback((card: string) => {
+    const cur = localLayoutRef.current;
+    const currentWidth = cur.widths[card] || "half";
+    const newWidth = currentWidth === "half" ? "full" : "half";
+    updateLocalLayout({
+      ...cur,
+      widths: { ...cur.widths, [card]: newWidth },
+    });
   }, [updateLocalLayout]);
 
+  // Visibility check
+  const isVisible = useCallback((card: string): boolean => {
+    if (card === "clock") return true;
+    if (card === "timer") return settings.showPomodoro;
+    if (card === "tasks") return settings.showTasks;
+    if (card === "notes") return settings.showNotes;
+    return false;
+  }, [settings.showPomodoro, settings.showTasks, settings.showNotes]);
+
+  // Filter columns to only visible cards
+  const leftCards = localLayout.left.filter(isVisible) as CardId[];
+  const rightCards = localLayout.right.filter(isVisible) as CardId[];
+
+  // DnD handler for cross-column movement
   const onCardDragEnd = useCallback((result: DropResult) => {
     if (!result.destination) return;
-    const { source, destination } = result;
-    if (source.index === destination.index) return;
-    const order = [...localLayoutRef.current.order];
-    const [removed] = order.splice(source.index, 1);
-    order.splice(destination.index, 0, removed);
-    updateLocalLayout({ order });
-  }, [updateLocalLayout]);
+    const { source, destination, draggableId } = result;
 
+    const getColumn = (id: string) => {
+      const cur = localLayoutRef.current;
+      // Use all items (including hidden) for correct ordering
+      if (id === "col-left") return [...cur.left];
+      if (id === "col-right") return [...cur.right];
+      return [];
+    };
+
+    const sourceCol = getColumn(source.droppableId);
+    const destCol = getColumn(destination.droppableId);
+
+    if (source.droppableId === destination.droppableId) {
+      // Reorder within same column — map visible index to actual index
+      const visibleItems = sourceCol.filter(isVisible);
+      const draggedCard = visibleItems[source.index];
+      const targetCard = visibleItems[destination.index];
+      if (!draggedCard || draggedCard === targetCard) return;
+
+      // Remove dragged from source column
+      const col = sourceCol.filter((c) => c !== draggedCard);
+      // Insert at target position
+      const targetIdx = col.indexOf(targetCard);
+      if (destination.index > source.index) {
+        col.splice(targetIdx + 1, 0, draggedCard);
+      } else {
+        col.splice(targetIdx, 0, draggedCard);
+      }
+
+      const cur = localLayoutRef.current;
+      if (source.droppableId === "col-left") {
+        updateLocalLayout({ ...cur, left: col });
+      } else {
+        updateLocalLayout({ ...cur, right: col });
+      }
+    } else {
+      // Move between columns
+      const visibleSource = sourceCol.filter(isVisible);
+      const draggedCard = visibleSource[source.index];
+      if (!draggedCard) return;
+
+      const newSource = sourceCol.filter((c) => c !== draggedCard);
+      const visibleDest = destCol.filter(isVisible);
+      const targetCard = visibleDest[destination.index];
+
+      let newDest: string[];
+      if (targetCard) {
+        const targetIdx = destCol.indexOf(targetCard);
+        newDest = [...destCol];
+        newDest.splice(targetIdx, 0, draggedCard);
+      } else {
+        newDest = [...destCol, draggedCard];
+      }
+
+      const cur = localLayoutRef.current;
+      if (source.droppableId === "col-left") {
+        updateLocalLayout({ ...cur, left: newSource, right: newDest });
+      } else {
+        updateLocalLayout({ ...cur, left: newDest, right: newSource });
+      }
+    }
+  }, [isVisible, updateLocalLayout]);
+
+  // Realtime & reload
   const reloadAll = useCallback(async () => {
     await Promise.all([reloadSettings(), reloadTheme()]);
     todoReloadRef.current?.();
@@ -131,16 +206,6 @@ const Index = () => {
     setExpandedCard((prev) => (prev === card ? null : card));
   };
 
-  const isVisible = (card: CardId): boolean => {
-    if (card === "clock") return true;
-    if (card === "timer") return settings.showPomodoro;
-    if (card === "tasks") return settings.showTasks;
-    if (card === "notes") return settings.showNotes;
-    return false;
-  };
-
-  const visibleCards = localLayout.order.filter((c) => isVisible(c as CardId)) as CardId[];
-
   const renderCardContent = (card: CardId) => {
     switch (card) {
       case "clock": return <ClockDisplay expanded={expandedCard === "clock"} />;
@@ -160,14 +225,65 @@ const Index = () => {
     return "flex-1 overflow-y-auto";
   };
 
-  // Build layout: use CSS grid with span for full-width items
-  const getCardSpan = (card: CardId): boolean => {
-    const width = localLayout.widths[card] || "full";
-    return width === "full";
+  const isClockCollapsed = localLayout.collapsed.includes("clock");
+
+  // Render a draggable card
+  const renderDraggableCard = (card: CardId, index: number) => {
+    const isFullWidth = (localLayout.widths[card] || "half") === "full";
+
+    return (
+      <Draggable key={card} draggableId={card} index={index}>
+        {(provided, snapshot) => (
+          <div
+            ref={provided.innerRef}
+            {...provided.draggableProps}
+            className={`${snapshot.isDragging ? "opacity-90 z-50" : ""}`}
+          >
+            <CollapsibleCard
+              title={CARD_LABELS[card]}
+              collapsed={localLayout.collapsed.includes(card)}
+              onToggleCollapse={() => toggleCollapse(card)}
+              expandable
+              expanded={false}
+              onToggleExpand={() => toggleExpand(card)}
+              width={(localLayout.widths[card] as "full" | "half") || "half"}
+              onWidthToggle={() => toggleCardWidth(card)}
+              dragHandleProps={provided.dragHandleProps}
+              isDragging={snapshot.isDragging}
+              centerContent={card === "timer"}
+            >
+              {renderCardContent(card)}
+            </CollapsibleCard>
+          </div>
+        )}
+      </Draggable>
+    );
   };
 
-  // Check if any visible card is half-width (to enable 2-col grid)
-  const hasHalfWidth = visibleCards.some((c) => !getCardSpan(c));
+  // Render a column droppable
+  const renderColumn = (columnId: string, cards: CardId[]) => (
+    <Droppable droppableId={columnId}>
+      {(provided, snapshot) => (
+        <div
+          ref={provided.innerRef}
+          {...provided.droppableProps}
+          className={`flex flex-col gap-6 min-h-[80px] rounded-xl transition-colors ${
+            snapshot.isDraggingOver ? "bg-primary/5 ring-2 ring-primary/10 ring-inset" : ""
+          }`}
+        >
+          {cards.length === 0 && !snapshot.isDraggingOver && (
+            <div className="flex items-center justify-center py-12 rounded-xl border-2 border-dashed border-border/40 text-muted-foreground/40 text-xs">
+              Drop cards here
+            </div>
+          )}
+          {cards.map((card, index) => renderDraggableCard(card, index))}
+          {provided.placeholder}
+        </div>
+      )}
+    </Droppable>
+  );
+
+  const hasAnyCards = leftCards.length > 0 || rightCards.length > 0;
 
   return (
     <div className="min-h-screen bg-background">
@@ -204,7 +320,7 @@ const Index = () => {
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-6 py-10">
+      <main className="mx-auto max-w-5xl px-6 py-10 space-y-6">
         {/* Fullscreen overlay */}
         {expandedCard && (
           <div className="fixed inset-0 z-30 bg-background/60 backdrop-blur-sm" onClick={() => setExpandedCard(null)} />
@@ -228,49 +344,27 @@ const Index = () => {
           </div>
         )}
 
-        {/* Draggable card grid */}
-        {!expandedCard && (
+        {/* Clock — always on top, fixed position, not draggable */}
+        {(!expandedCard || expandedCard === "clock") && expandedCard !== "clock" && (
+          <CollapsibleCard
+            title="Clock"
+            collapsed={isClockCollapsed}
+            onToggleCollapse={() => toggleCollapse("clock")}
+            expandable
+            expanded={false}
+            onToggleExpand={() => toggleExpand("clock")}
+          >
+            <ClockDisplay expanded={false} />
+          </CollapsibleCard>
+        )}
+
+        {/* Two-column layout with drag-and-drop */}
+        {!expandedCard && hasAnyCards && (
           <DragDropContext onDragEnd={onCardDragEnd}>
-            <Droppable droppableId="card-layout">
-              {(provided) => (
-                <div
-                  ref={provided.innerRef}
-                  {...provided.droppableProps}
-                  className={`grid gap-6 ${hasHalfWidth ? "lg:grid-cols-2 lg:gap-10" : ""}`}
-                >
-                  {visibleCards.map((card, index) => {
-                    const isFullWidth = getCardSpan(card);
-                    return (
-                      <Draggable key={card} draggableId={card} index={index}>
-                        {(provided, snapshot) => (
-                          <div
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            className={`${isFullWidth && hasHalfWidth ? "lg:col-span-2" : ""} ${card === "timer" ? "flex flex-col items-center" : ""} ${snapshot.isDragging ? "opacity-90 z-50" : ""}`}
-                          >
-                            <CollapsibleCard
-                              title={CARD_LABELS[card]}
-                              collapsed={localLayout.collapsed.includes(card)}
-                              onToggleCollapse={() => toggleCollapse(card)}
-                              expandable
-                              expanded={false}
-                              onToggleExpand={() => toggleExpand(card)}
-                              width={localLayout.widths[card] as "full" | "half"}
-                              onWidthToggle={() => setCardWidth(card, localLayout.widths[card] === "half" ? "full" : "half")}
-                              dragHandleProps={provided.dragHandleProps}
-                              isDragging={snapshot.isDragging}
-                            >
-                              {renderCardContent(card)}
-                            </CollapsibleCard>
-                          </div>
-                        )}
-                      </Draggable>
-                    );
-                  })}
-                  {provided.placeholder}
-                </div>
-              )}
-            </Droppable>
+            <div className="grid gap-6 lg:grid-cols-2 lg:gap-10">
+              {renderColumn("col-left", leftCards)}
+              {renderColumn("col-right", rightCards)}
+            </div>
           </DragDropContext>
         )}
       </main>
@@ -293,6 +387,7 @@ const CollapsibleCard = ({
   onWidthToggle,
   dragHandleProps,
   isDragging,
+  centerContent,
 }: {
   title: string;
   collapsed: boolean;
@@ -307,12 +402,12 @@ const CollapsibleCard = ({
   onWidthToggle?: () => void;
   dragHandleProps?: any;
   isDragging?: boolean;
+  centerContent?: boolean;
 }) => (
   <div className={`w-full rounded-2xl border bg-card shadow-sm relative ${isDragging ? "shadow-lg ring-2 ring-primary/20" : ""} ${className}`}>
     {/* Header */}
     <div className="flex items-center justify-between px-6 py-3">
       <div className="flex items-center gap-1">
-        {/* Drag handle */}
         {!expanded && dragHandleProps && (
           <div
             {...dragHandleProps}
@@ -358,7 +453,7 @@ const CollapsibleCard = ({
     </div>
     {/* Content */}
     {!collapsed && (
-      <div className={`px-6 pb-6 ${contentClassName}`}>
+      <div className={`px-6 pb-6 ${centerContent ? "flex flex-col items-center" : ""} ${contentClassName}`}>
         {children}
       </div>
     )}
