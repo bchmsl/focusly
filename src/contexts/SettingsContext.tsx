@@ -120,6 +120,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
         displayMode: (data as any).display_mode ?? "pomodoro",
         showSeconds: (data as any).show_seconds ?? false,
         weatherCity: (data as any).weather_city ?? null,
+        showWeather: (data as any).show_weather ?? true,
         showPomodoro: (data as any).show_pomodoro ?? true,
         showTasks: (data as any).show_tasks ?? true,
         showNotes: (data as any).show_notes ?? true,
