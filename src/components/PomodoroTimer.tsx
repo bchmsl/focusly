@@ -7,6 +7,7 @@ import { useSettings } from "@/contexts/SettingsContext";
 interface PomodoroTimerProps {
   onTimerEnd?: (mode: string) => void;
   reloadRef?: React.MutableRefObject<(() => void) | null>;
+  expanded?: boolean;
 }
 
 type TimerMode = "focus" | "shortBreak" | "longBreak";
@@ -17,7 +18,7 @@ const MODE_LABELS: Record<TimerMode, string> = {
   longBreak: "Long Break",
 };
 
-const PomodoroTimer = ({ onTimerEnd, reloadRef }: PomodoroTimerProps) => {
+const PomodoroTimer = ({ onTimerEnd, reloadRef, expanded }: PomodoroTimerProps) => {
   const { user } = useAuth();
   const { settings, loaded: settingsLoaded } = useSettings();
 
@@ -273,7 +274,7 @@ const PomodoroTimer = ({ onTimerEnd, reloadRef }: PomodoroTimerProps) => {
   }
 
   return (
-    <div className="flex flex-col items-center gap-8">
+    <div className={`flex flex-col items-center ${expanded ? "gap-12" : "gap-8"}`}>
       {/* Mode tabs */}
       <div className="flex gap-1 rounded-lg bg-muted p-1">
         {(["focus", "shortBreak", "longBreak"] as TimerMode[]).map((m) => (
@@ -295,7 +296,7 @@ const PomodoroTimer = ({ onTimerEnd, reloadRef }: PomodoroTimerProps) => {
 
       {/* Timer circle */}
       <div className="relative flex items-center justify-center">
-        <svg className="h-56 w-56 -rotate-90" viewBox="0 0 200 200">
+        <svg className={`${expanded ? "h-80 w-80 lg:h-[28rem] lg:w-[28rem]" : "h-56 w-56"} -rotate-90 transition-all`} viewBox="0 0 200 200">
           <circle cx="100" cy="100" r="90" fill="none" stroke="hsl(var(--accent))" strokeWidth="6" />
           <circle
             cx="100" cy="100" r="90" fill="none"
@@ -307,43 +308,43 @@ const PomodoroTimer = ({ onTimerEnd, reloadRef }: PomodoroTimerProps) => {
           />
         </svg>
         <div className="absolute flex flex-col items-center">
-          <span className={`font-mono-timer text-5xl font-bold ${isRunning ? "timer-pulse" : ""}`}>
+          <span className={`font-mono-timer font-bold ${isRunning ? "timer-pulse" : ""} ${expanded ? "text-7xl lg:text-8xl" : "text-5xl"} transition-all`}>
             {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
           </span>
-          <span className="mt-1 text-sm font-medium text-muted-foreground">
+          <span className={`mt-1 font-medium text-muted-foreground ${expanded ? "text-lg" : "text-sm"}`}>
             {MODE_LABELS[mode]}
           </span>
         </div>
       </div>
 
       {/* Session dots */}
-      <div className="flex gap-2">
+      <div className={`flex ${expanded ? "gap-3" : "gap-2"}`}>
         {Array.from({ length: settings.longBreakInterval }).map((_, i) => (
           <div
             key={i}
-            className={`h-2.5 w-2.5 rounded-full transition-colors ${
+            className={`rounded-full transition-colors ${
               i < completedSessions ? "bg-primary" : "bg-accent"
-            }`}
+            } ${expanded ? "h-3.5 w-3.5" : "h-2.5 w-2.5"}`}
           />
         ))}
       </div>
 
       {/* Controls */}
-      <div className="flex items-center gap-3">
-        <button onClick={handleReset} className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" aria-label="Reset">
-          <RotateCcw className="h-4 w-4" />
+      <div className={`flex items-center ${expanded ? "gap-5" : "gap-3"}`}>
+        <button onClick={handleReset} className={`flex items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground ${expanded ? "h-14 w-14" : "h-10 w-10"}`} aria-label="Reset">
+          <RotateCcw className={expanded ? "h-6 w-6" : "h-4 w-4"} />
         </button>
         <button
           onClick={toggleRunning}
-          className={`flex h-14 w-14 items-center justify-center rounded-full text-primary-foreground transition-all hover:scale-105 active:scale-95 ${
+          className={`flex items-center justify-center rounded-full text-primary-foreground transition-all hover:scale-105 active:scale-95 ${
             isFocus ? "bg-primary" : "bg-secondary"
-          }`}
+          } ${expanded ? "h-20 w-20" : "h-14 w-14"}`}
           aria-label={isRunning ? "Pause" : "Start"}
         >
-          {isRunning ? <Pause className="h-6 w-6" /> : <Play className="ml-0.5 h-6 w-6" />}
+          {isRunning ? <Pause className={expanded ? "h-9 w-9" : "h-6 w-6"} /> : <Play className={`ml-0.5 ${expanded ? "h-9 w-9" : "h-6 w-6"}`} />}
         </button>
-        <button onClick={handleTimerComplete} className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" aria-label="Skip">
-          <SkipForward className="h-4 w-4" />
+        <button onClick={handleTimerComplete} className={`flex items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground ${expanded ? "h-14 w-14" : "h-10 w-10"}`} aria-label="Skip">
+          <SkipForward className={expanded ? "h-6 w-6" : "h-4 w-4"} />
         </button>
       </div>
     </div>

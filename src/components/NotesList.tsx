@@ -19,7 +19,7 @@ interface TagType {
   emoji: string | null;
 }
 
-const NotesList = ({ reloadRef }: { reloadRef?: React.MutableRefObject<(() => void) | null> }) => {
+const NotesList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject<(() => void) | null>; expanded?: boolean }) => {
   const { user } = useAuth();
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
@@ -226,7 +226,7 @@ const NotesList = ({ reloadRef }: { reloadRef?: React.MutableRefObject<(() => vo
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className={`flex flex-col gap-4 ${expanded ? "mx-auto w-full max-w-3xl" : ""}`}>
       <form onSubmit={(e) => { e.preventDefault(); addNote(); }} className="flex gap-2">
         <input
           ref={inputRef}

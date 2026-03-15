@@ -21,7 +21,7 @@ interface TagType {
   emoji: string | null;
 }
 
-const TodoList = ({ reloadRef }: { reloadRef?: React.MutableRefObject<(() => void) | null> }) => {
+const TodoList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject<(() => void) | null>; expanded?: boolean }) => {
   const { user } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
@@ -298,7 +298,7 @@ const TodoList = ({ reloadRef }: { reloadRef?: React.MutableRefObject<(() => voi
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className={`flex flex-col gap-4 ${expanded ? "mx-auto w-full max-w-3xl" : ""}`}>
       <form onSubmit={(e) => { e.preventDefault(); addTask(); }} className="flex gap-2">
         <input
           ref={inputRef}
