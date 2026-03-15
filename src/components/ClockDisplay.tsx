@@ -113,29 +113,29 @@ const ClockDisplay = ({ expanded = false }: { expanded?: boolean }) => {
   const WeatherIcon = weather ? (WEATHER_ICONS[weather.weatherCode] || CloudSun) : null;
 
   return (
-    <div className="flex flex-col items-center gap-6">
+    <div className={`flex flex-col items-center ${expanded ? "gap-10" : "gap-6"}`}>
       {/* Clock */}
       <div className="flex flex-col items-center">
-        <span className="font-mono-timer text-6xl font-bold tracking-tight">
+        <span className={`font-mono-timer font-bold tracking-tight ${expanded ? "text-[8rem] leading-none" : "text-6xl"}`}>
           {hours}:{minutes}
           {settings.showSeconds && (
-            <span className="text-4xl text-muted-foreground">:{seconds}</span>
+            <span className={`text-muted-foreground ${expanded ? "text-6xl" : "text-4xl"}`}>:{seconds}</span>
           )}
         </span>
-        <span className="mt-2 text-sm text-muted-foreground">{dateStr}</span>
+        <span className={`mt-2 text-muted-foreground ${expanded ? "text-xl" : "text-sm"}`}>{dateStr}</span>
       </div>
 
       {/* Weather */}
       {weather && (
-        <div className="flex items-center gap-3 rounded-xl bg-muted/50 px-4 py-2.5">
-          {WeatherIcon && <WeatherIcon className="h-5 w-5 text-primary" />}
+        <div className={`flex items-center rounded-xl bg-muted/50 ${expanded ? "gap-5 px-6 py-4" : "gap-3 px-4 py-2.5"}`}>
+          {WeatherIcon && <WeatherIcon className={`text-primary ${expanded ? "h-8 w-8" : "h-5 w-5"}`} />}
           <div className="flex items-center gap-1.5">
-            <Thermometer className="h-3.5 w-3.5 text-muted-foreground" />
-            <span className="text-sm font-medium">{weather.temperature}°C</span>
+            <Thermometer className={`text-muted-foreground ${expanded ? "h-5 w-5" : "h-3.5 w-3.5"}`} />
+            <span className={`font-medium ${expanded ? "text-xl" : "text-sm"}`}>{weather.temperature}°C</span>
           </div>
           <div className="flex items-center gap-1">
-            <MapPin className="h-3 w-3 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground">{weather.city}</span>
+            <MapPin className={`text-muted-foreground ${expanded ? "h-4 w-4" : "h-3 w-3"}`} />
+            <span className={`text-muted-foreground ${expanded ? "text-base" : "text-xs"}`}>{weather.city}</span>
           </div>
         </div>
       )}
