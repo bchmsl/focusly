@@ -151,6 +151,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
       display_mode: next.displayMode,
       show_seconds: next.showSeconds,
       weather_city: next.weatherCity,
+      show_weather: next.showWeather,
       show_pomodoro: next.showPomodoro,
       show_tasks: next.showTasks,
       show_notes: next.showNotes,
