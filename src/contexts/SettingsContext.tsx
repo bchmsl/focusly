@@ -82,6 +82,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
         weatherCity: (data as any).weather_city ?? null,
         showPomodoro: (data as any).show_pomodoro ?? true,
         showTasks: (data as any).show_tasks ?? true,
+        showNotes: (data as any).show_notes ?? true,
       });
     }
     setLoaded(true);
