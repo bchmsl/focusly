@@ -238,6 +238,7 @@ const SettingsPanel = ({ onTagsChanged }: { onTagsChanged?: () => void }) => {
                 onChange={(v) => updateSettings({ autoStartFocus: v })}
               />
             </section>
+            )}
 
             {/* Sound */}
             <section className="space-y-4">
