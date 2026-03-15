@@ -399,7 +399,11 @@ const TodoList = ({ reloadRef }: { reloadRef?: React.MutableRefObject<(() => voi
         open={editDialogOpen}
         onOpenChange={(open) => {
           setEditDialogOpen(open);
-          if (!open) setEditTask(null);
+          editDialogOpenRef.current = open;
+          if (!open) {
+            setEditTask(null);
+            loadTasks();
+          }
         }}
         tasks={tasks}
         tags={tags}
