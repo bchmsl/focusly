@@ -16,6 +16,7 @@ export interface Settings {
   weatherCity: string | null;
   showPomodoro: boolean;
   showTasks: boolean;
+  showNotes: boolean;
 }
 
 const DEFAULT_SETTINGS: Settings = {
@@ -32,6 +33,7 @@ const DEFAULT_SETTINGS: Settings = {
   weatherCity: null,
   showPomodoro: true,
   showTasks: true,
+  showNotes: true,
 };
 
 interface SettingsContextType {
@@ -80,6 +82,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
         weatherCity: (data as any).weather_city ?? null,
         showPomodoro: (data as any).show_pomodoro ?? true,
         showTasks: (data as any).show_tasks ?? true,
+        showNotes: (data as any).show_notes ?? true,
       });
     }
     setLoaded(true);
@@ -109,6 +112,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
       weather_city: next.weatherCity,
       show_pomodoro: next.showPomodoro,
       show_tasks: next.showTasks,
+      show_notes: next.showNotes,
     } as any, { onConflict: "user_id" });
   }, [settings, user]);
 

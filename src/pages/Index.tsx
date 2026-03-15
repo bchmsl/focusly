@@ -2,6 +2,7 @@ import { useCallback, useState, useEffect, useRef } from "react";
 import PomodoroTimer from "@/components/PomodoroTimer";
 import ClockDisplay from "@/components/ClockDisplay";
 import TodoList from "@/components/TodoList";
+import NotesList from "@/components/NotesList";
 import { Timer, LogOut, Bell, BellOff, Maximize2, Minimize2, ChevronDown, ChevronUp } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import SettingsPanel from "@/components/SettingsPanel";
@@ -22,7 +23,8 @@ const Index = () => {
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const todoReloadRef = useRef<(() => void) | null>(null);
   const timerReloadRef = useRef<(() => void) | null>(null);
-  const [expandedCard, setExpandedCard] = useState<"clock" | "timer" | "tasks" | null>(null);
+  const notesReloadRef = useRef<(() => void) | null>(null);
+  const [expandedCard, setExpandedCard] = useState<"clock" | "timer" | "tasks" | "notes" | null>(null);
   const [collapsedCards, setCollapsedCards] = useState<Set<string>>(new Set());
 
   const toggleCollapse = (card: string) => {
@@ -38,6 +40,7 @@ const Index = () => {
     await Promise.all([reloadSettings(), reloadTheme()]);
     todoReloadRef.current?.();
     timerReloadRef.current?.();
+    notesReloadRef.current?.();
   }, [reloadSettings, reloadTheme]);
 
   useEffect(() => {
@@ -46,7 +49,9 @@ const Index = () => {
       .channel('realtime-sync')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, () => { todoReloadRef.current?.(); })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'task_tags' }, () => { todoReloadRef.current?.(); })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'tags' }, () => { todoReloadRef.current?.(); })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tags' }, () => { todoReloadRef.current?.(); notesReloadRef.current?.(); })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'notes' }, () => { notesReloadRef.current?.(); })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'note_tags' }, () => { notesReloadRef.current?.(); })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'timer_state' }, () => { timerReloadRef.current?.(); })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'user_settings' }, () => {
         if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -65,16 +70,18 @@ const Index = () => {
     );
   }, [sendNotification]);
 
-  const toggleExpand = (card: "clock" | "timer" | "tasks") => {
+  const toggleExpand = (card: "clock" | "timer" | "tasks" | "notes") => {
     setExpandedCard((prev) => (prev === card ? null : card));
   };
 
   const isClockExpanded = expandedCard === "clock";
   const isTimerExpanded = expandedCard === "timer";
   const isTasksExpanded = expandedCard === "tasks";
+  const isNotesExpanded = expandedCard === "notes";
   const isClockCollapsed = collapsedCards.has("clock");
   const isTimerCollapsed = collapsedCards.has("timer");
   const isTasksCollapsed = collapsedCards.has("tasks");
+  const isNotesCollapsed = collapsedCards.has("notes");
 
   return (
     <div className="min-h-screen bg-background">
@@ -101,7 +108,7 @@ const Index = () => {
                 </div>
               )
             )}
-            <SettingsPanel onTagsChanged={() => todoReloadRef.current?.()} />
+            <SettingsPanel onTagsChanged={() => { todoReloadRef.current?.(); notesReloadRef.current?.(); }} />
             <ThemeToggle />
             <button onClick={handleSignOut} className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
               <LogOut className="h-4 w-4" />
@@ -136,7 +143,7 @@ const Index = () => {
         )}
 
         {/* Timer & Tasks grid */}
-        {!isClockExpanded && (
+        {!isClockExpanded && !isNotesExpanded && (
           <div className={`grid gap-6 ${settings.showPomodoro && settings.showTasks ? "lg:grid-cols-2 lg:gap-10" : ""}`}>
             {/* Timer card (pomodoro) — always mounted, hidden via CSS */}
             <div
@@ -175,6 +182,27 @@ const Index = () => {
                 <TodoList reloadRef={todoReloadRef} />
               </CollapsibleCard>
             </div>
+          </div>
+        )}
+
+        {/* Notes card */}
+        {!isClockExpanded && !isTimerExpanded && !isTasksExpanded && (
+          <div
+            className={`transition-all duration-300 ${isNotesExpanded ? "fixed inset-4 z-40" : ""}`}
+            style={{ display: (settings as any).showNotes !== false ? undefined : "none" }}
+          >
+            <CollapsibleCard
+              title="Notes"
+              collapsed={!isNotesExpanded && isNotesCollapsed}
+              onToggleCollapse={() => toggleCollapse("notes")}
+              expandable
+              expanded={isNotesExpanded}
+              onToggleExpand={() => toggleExpand("notes")}
+              className={isNotesExpanded ? "h-full flex flex-col overflow-hidden" : ""}
+              contentClassName={isNotesExpanded ? "flex-1 overflow-y-auto" : ""}
+            >
+              <NotesList reloadRef={notesReloadRef} />
+            </CollapsibleCard>
           </div>
         )}
       </main>
