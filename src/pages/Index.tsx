@@ -23,7 +23,8 @@ const Index = () => {
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const todoReloadRef = useRef<(() => void) | null>(null);
   const timerReloadRef = useRef<(() => void) | null>(null);
-  const [expandedCard, setExpandedCard] = useState<"clock" | "timer" | "tasks" | null>(null);
+  const notesReloadRef = useRef<(() => void) | null>(null);
+  const [expandedCard, setExpandedCard] = useState<"clock" | "timer" | "tasks" | "notes" | null>(null);
   const [collapsedCards, setCollapsedCards] = useState<Set<string>>(new Set());
 
   const toggleCollapse = (card: string) => {
