@@ -318,13 +318,13 @@ const PomodoroTimer = ({ onTimerEnd, reloadRef, expanded }: PomodoroTimerProps) 
       </div>
 
       {/* Session dots */}
-      <div className="flex gap-2">
+      <div className={`flex ${expanded ? "gap-3" : "gap-2"}`}>
         {Array.from({ length: settings.longBreakInterval }).map((_, i) => (
           <div
             key={i}
-            className={`h-2.5 w-2.5 rounded-full transition-colors ${
+            className={`rounded-full transition-colors ${
               i < completedSessions ? "bg-primary" : "bg-accent"
-            }`}
+            } ${expanded ? "h-3.5 w-3.5" : "h-2.5 w-2.5"}`}
           />
         ))}
       </div>
