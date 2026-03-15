@@ -5,8 +5,9 @@ import TodoList from "@/components/TodoList";
 import NotesList from "@/components/NotesList";
 import {
   Timer, LogOut, Bell, BellOff, Maximize2, Minimize2,
-  ChevronDown, ChevronUp, ArrowUp, ArrowDown, Columns2, Square,
+  ChevronDown, ChevronUp, Columns2, Square, GripVertical,
 } from "lucide-react";
+import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import ThemeToggle from "@/components/ThemeToggle";
 import SettingsPanel from "@/components/SettingsPanel";
 import { useAuth } from "@/contexts/AuthContext";
@@ -33,37 +34,60 @@ const Index = () => {
   const { settings, updateSettings, reload: reloadSettings } = useSettings();
   const { reload: reloadTheme } = useTheme();
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const layoutSaveRef = useRef<NodeJS.Timeout | null>(null);
   const todoReloadRef = useRef<(() => void) | null>(null);
   const timerReloadRef = useRef<(() => void) | null>(null);
   const notesReloadRef = useRef<(() => void) | null>(null);
   const [expandedCard, setExpandedCard] = useState<CardId | null>(null);
 
-  const layout = settings.cardLayout;
+  // Local layout state for instant UI updates, synced to DB
+  const [localLayout, setLocalLayout] = useState<CardLayout>(settings.cardLayout);
+  const localLayoutRef = useRef(localLayout);
+  localLayoutRef.current = localLayout;
 
-  const updateLayout = useCallback((patch: Partial<CardLayout>) => {
-    updateSettings({ cardLayout: { ...layout, ...patch } });
-  }, [layout, updateSettings]);
+  // Sync from settings when they load/reload from DB
+  useEffect(() => {
+    setLocalLayout(settings.cardLayout);
+  }, [settings.cardLayout]);
+
+  // Debounced save to DB
+  const saveLayout = useCallback((layout: CardLayout) => {
+    if (layoutSaveRef.current) clearTimeout(layoutSaveRef.current);
+    layoutSaveRef.current = setTimeout(() => {
+      updateSettings({ cardLayout: layout });
+    }, 500);
+  }, [updateSettings]);
+
+  const updateLocalLayout = useCallback((patch: Partial<CardLayout>) => {
+    const next = { ...localLayoutRef.current, ...patch };
+    setLocalLayout(next);
+    saveLayout(next);
+  }, [saveLayout]);
 
   const toggleCollapse = useCallback((card: string) => {
-    const collapsed = layout.collapsed.includes(card)
-      ? layout.collapsed.filter((c) => c !== card)
-      : [...layout.collapsed, card];
-    updateLayout({ collapsed });
-  }, [layout, updateLayout]);
+    setLocalLayout((prev) => {
+      const collapsed = prev.collapsed.includes(card)
+        ? prev.collapsed.filter((c) => c !== card)
+        : [...prev.collapsed, card];
+      const next = { ...prev, collapsed };
+      saveLayout(next);
+      return next;
+    });
+  }, [saveLayout]);
 
   const setCardWidth = useCallback((card: string, width: "full" | "half") => {
-    updateLayout({ widths: { ...layout.widths, [card]: width } });
-  }, [layout, updateLayout]);
+    updateLocalLayout({ widths: { ...localLayoutRef.current.widths, [card]: width } });
+  }, [updateLocalLayout]);
 
-  const moveCard = useCallback((card: string, direction: -1 | 1) => {
-    const order = [...layout.order];
-    const idx = order.indexOf(card);
-    if (idx < 0) return;
-    const target = idx + direction;
-    if (target < 0 || target >= order.length) return;
-    [order[idx], order[target]] = [order[target], order[idx]];
-    updateLayout({ order });
-  }, [layout, updateLayout]);
+  const onCardDragEnd = useCallback((result: DropResult) => {
+    if (!result.destination) return;
+    const { source, destination } = result;
+    if (source.index === destination.index) return;
+    const order = [...localLayoutRef.current.order];
+    const [removed] = order.splice(source.index, 1);
+    order.splice(destination.index, 0, removed);
+    updateLocalLayout({ order });
+  }, [updateLocalLayout]);
 
   const reloadAll = useCallback(async () => {
     await Promise.all([reloadSettings(), reloadTheme()]);
@@ -87,7 +111,11 @@ const Index = () => {
         debounceRef.current = setTimeout(() => { reloadSettings(); reloadTheme(); }, 300);
       })
       .subscribe();
-    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); supabase.removeChannel(channel); };
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      if (layoutSaveRef.current) clearTimeout(layoutSaveRef.current);
+      supabase.removeChannel(channel);
+    };
   }, [user, reloadSettings, reloadTheme]);
 
   const handleSignOut = async () => { await signOut(); navigate("/auth"); };
@@ -103,7 +131,6 @@ const Index = () => {
     setExpandedCard((prev) => (prev === card ? null : card));
   };
 
-  // Visibility map
   const isVisible = (card: CardId): boolean => {
     if (card === "clock") return true;
     if (card === "timer") return settings.showPomodoro;
@@ -112,10 +139,8 @@ const Index = () => {
     return false;
   };
 
-  // Visible, ordered cards (not expanded)
-  const visibleCards = layout.order.filter((c) => isVisible(c as CardId)) as CardId[];
+  const visibleCards = localLayout.order.filter((c) => isVisible(c as CardId)) as CardId[];
 
-  // Card content renderer
   const renderCardContent = (card: CardId) => {
     switch (card) {
       case "clock": return <ClockDisplay expanded={expandedCard === "clock"} />;
@@ -125,45 +150,24 @@ const Index = () => {
     }
   };
 
-  // Group visible cards into layout rows (pairs of half-width or single full-width)
-  const buildRows = (): CardId[][] => {
-    if (expandedCard) return [];
-    const rows: CardId[][] = [];
-    let halfBuffer: CardId[] = [];
-
-    for (const card of visibleCards) {
-      const width = layout.widths[card] || "full";
-      if (width === "half") {
-        halfBuffer.push(card);
-        if (halfBuffer.length === 2) {
-          rows.push([...halfBuffer]);
-          halfBuffer = [];
-        }
-      } else {
-        if (halfBuffer.length > 0) {
-          rows.push([...halfBuffer]);
-          halfBuffer = [];
-        }
-        rows.push([card]);
-      }
-    }
-    if (halfBuffer.length > 0) rows.push([...halfBuffer]);
-    return rows;
-  };
-
-  const rows = buildRows();
-
   const getExpandedClasses = (card: CardId) => {
-    if (card === "clock") return "h-full flex flex-col items-center justify-center";
-    if (card === "timer") return "h-full flex flex-col items-center justify-center";
+    if (card === "clock" || card === "timer") return "h-full flex flex-col items-center justify-center";
     return "h-full flex flex-col overflow-hidden";
   };
 
   const getExpandedContentClasses = (card: CardId) => {
-    if (card === "clock") return "flex-1 flex items-center justify-center";
-    if (card === "timer") return "flex-1 flex items-center justify-center";
+    if (card === "clock" || card === "timer") return "flex-1 flex items-center justify-center";
     return "flex-1 overflow-y-auto";
   };
+
+  // Build layout: use CSS grid with span for full-width items
+  const getCardSpan = (card: CardId): boolean => {
+    const width = localLayout.widths[card] || "full";
+    return width === "full";
+  };
+
+  // Check if any visible card is half-width (to enable 2-col grid)
+  const hasHalfWidth = visibleCards.some((c) => !getCardSpan(c));
 
   return (
     <div className="min-h-screen bg-background">
@@ -200,7 +204,7 @@ const Index = () => {
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-6 py-10 space-y-6">
+      <main className="mx-auto max-w-5xl px-6 py-10">
         {/* Fullscreen overlay */}
         {expandedCard && (
           <div className="fixed inset-0 z-30 bg-background/60 backdrop-blur-sm" onClick={() => setExpandedCard(null)} />
@@ -210,7 +214,6 @@ const Index = () => {
         {expandedCard && (
           <div className="fixed inset-4 z-40 transition-all duration-300">
             <CollapsibleCard
-              cardId={expandedCard}
               title={CARD_LABELS[expandedCard]}
               collapsed={false}
               onToggleCollapse={() => {}}
@@ -225,55 +228,51 @@ const Index = () => {
           </div>
         )}
 
-        {/* Normal layout rows */}
-        {!expandedCard && rows.map((row, ri) => {
-          if (row.length === 2) {
-            return (
-              <div key={row.join("-")} className="grid gap-6 lg:grid-cols-2 lg:gap-10">
-                {row.map((card) => (
-                  <div key={card} className={`flex flex-col ${card === "timer" ? "items-center" : ""}`}>
-                    <CollapsibleCard
-                      cardId={card}
-                      title={CARD_LABELS[card]}
-                      collapsed={layout.collapsed.includes(card)}
-                      onToggleCollapse={() => toggleCollapse(card)}
-                      expandable
-                      expanded={false}
-                      onToggleExpand={() => toggleExpand(card)}
-                      width={layout.widths[card] as "full" | "half"}
-                      onWidthToggle={() => setCardWidth(card, layout.widths[card] === "half" ? "full" : "half")}
-                      onMoveUp={visibleCards.indexOf(card) > 0 ? () => moveCard(card, -1) : undefined}
-                      onMoveDown={visibleCards.indexOf(card) < visibleCards.length - 1 ? () => moveCard(card, 1) : undefined}
-                    >
-                      {renderCardContent(card)}
-                    </CollapsibleCard>
-                  </div>
-                ))}
-              </div>
-            );
-          }
-
-          const card = row[0];
-          return (
-            <div key={card} className={`${card === "timer" ? "flex flex-col items-center" : ""}`}>
-              <CollapsibleCard
-                cardId={card}
-                title={CARD_LABELS[card]}
-                collapsed={layout.collapsed.includes(card)}
-                onToggleCollapse={() => toggleCollapse(card)}
-                expandable
-                expanded={false}
-                onToggleExpand={() => toggleExpand(card)}
-                width={layout.widths[card] as "full" | "half"}
-                onWidthToggle={() => setCardWidth(card, layout.widths[card] === "half" ? "full" : "half")}
-                onMoveUp={visibleCards.indexOf(card) > 0 ? () => moveCard(card, -1) : undefined}
-                onMoveDown={visibleCards.indexOf(card) < visibleCards.length - 1 ? () => moveCard(card, 1) : undefined}
-              >
-                {renderCardContent(card)}
-              </CollapsibleCard>
-            </div>
-          );
-        })}
+        {/* Draggable card grid */}
+        {!expandedCard && (
+          <DragDropContext onDragEnd={onCardDragEnd}>
+            <Droppable droppableId="card-layout">
+              {(provided) => (
+                <div
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
+                  className={`grid gap-6 ${hasHalfWidth ? "lg:grid-cols-2 lg:gap-10" : ""}`}
+                >
+                  {visibleCards.map((card, index) => {
+                    const isFullWidth = getCardSpan(card);
+                    return (
+                      <Draggable key={card} draggableId={card} index={index}>
+                        {(provided, snapshot) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            className={`${isFullWidth && hasHalfWidth ? "lg:col-span-2" : ""} ${card === "timer" ? "flex flex-col items-center" : ""} ${snapshot.isDragging ? "opacity-90 z-50" : ""}`}
+                          >
+                            <CollapsibleCard
+                              title={CARD_LABELS[card]}
+                              collapsed={localLayout.collapsed.includes(card)}
+                              onToggleCollapse={() => toggleCollapse(card)}
+                              expandable
+                              expanded={false}
+                              onToggleExpand={() => toggleExpand(card)}
+                              width={localLayout.widths[card] as "full" | "half"}
+                              onWidthToggle={() => setCardWidth(card, localLayout.widths[card] === "half" ? "full" : "half")}
+                              dragHandleProps={provided.dragHandleProps}
+                              isDragging={snapshot.isDragging}
+                            >
+                              {renderCardContent(card)}
+                            </CollapsibleCard>
+                          </div>
+                        )}
+                      </Draggable>
+                    );
+                  })}
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
+          </DragDropContext>
+        )}
       </main>
     </div>
   );
@@ -281,7 +280,6 @@ const Index = () => {
 
 /* Reusable collapsible + expandable card */
 const CollapsibleCard = ({
-  cardId,
   title,
   collapsed,
   onToggleCollapse,
@@ -293,10 +291,9 @@ const CollapsibleCard = ({
   contentClassName = "",
   width,
   onWidthToggle,
-  onMoveUp,
-  onMoveDown,
+  dragHandleProps,
+  isDragging,
 }: {
-  cardId: string;
   title: string;
   collapsed: boolean;
   onToggleCollapse: () => void;
@@ -308,58 +305,45 @@ const CollapsibleCard = ({
   contentClassName?: string;
   width?: "full" | "half";
   onWidthToggle?: () => void;
-  onMoveUp?: () => void;
-  onMoveDown?: () => void;
+  dragHandleProps?: any;
+  isDragging?: boolean;
 }) => (
-  <div className={`w-full rounded-2xl border bg-card shadow-sm relative ${className}`}>
+  <div className={`w-full rounded-2xl border bg-card shadow-sm relative ${isDragging ? "shadow-lg ring-2 ring-primary/20" : ""} ${className}`}>
     {/* Header */}
     <div className="flex items-center justify-between px-6 py-3">
-      {!expanded && (
-        <button
-          onClick={onToggleCollapse}
-          className="flex items-center gap-2 text-sm font-semibold text-foreground hover:text-foreground/80 transition-colors"
-        >
-          {collapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
-          {title}
-        </button>
-      )}
-      {expanded && <span className="text-sm font-semibold text-foreground">{title}</span>}
+      <div className="flex items-center gap-1">
+        {/* Drag handle */}
+        {!expanded && dragHandleProps && (
+          <div
+            {...dragHandleProps}
+            className="cursor-grab active:cursor-grabbing p-1 text-muted-foreground/30 hover:text-muted-foreground transition-colors"
+          >
+            <GripVertical className="h-4 w-4" />
+          </div>
+        )}
+
+        {!expanded && (
+          <button
+            onClick={onToggleCollapse}
+            className="flex items-center gap-2 text-sm font-semibold text-foreground hover:text-foreground/80 transition-colors"
+          >
+            {collapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
+            {title}
+          </button>
+        )}
+        {expanded && <span className="text-sm font-semibold text-foreground">{title}</span>}
+      </div>
 
       <div className="flex items-center gap-0.5">
-        {/* Reorder & width controls — only when not expanded */}
-        {!expanded && (
-          <>
-            {onMoveUp && (
-              <button
-                onClick={onMoveUp}
-                className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground/40 hover:bg-muted hover:text-foreground transition-colors"
-                aria-label="Move up"
-                title="Move up"
-              >
-                <ArrowUp className="h-3 w-3" />
-              </button>
-            )}
-            {onMoveDown && (
-              <button
-                onClick={onMoveDown}
-                className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground/40 hover:bg-muted hover:text-foreground transition-colors"
-                aria-label="Move down"
-                title="Move down"
-              >
-                <ArrowDown className="h-3 w-3" />
-              </button>
-            )}
-            {onWidthToggle && (
-              <button
-                onClick={onWidthToggle}
-                className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground/40 hover:bg-muted hover:text-foreground transition-colors"
-                aria-label={width === "half" ? "Full width" : "Half width"}
-                title={width === "half" ? "Full width" : "Half width"}
-              >
-                {width === "half" ? <Square className="h-3 w-3" /> : <Columns2 className="h-3 w-3" />}
-              </button>
-            )}
-          </>
+        {!expanded && onWidthToggle && (
+          <button
+            onClick={onWidthToggle}
+            className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground/40 hover:bg-muted hover:text-foreground transition-colors"
+            aria-label={width === "half" ? "Full width" : "Half width"}
+            title={width === "half" ? "Full width" : "Half width"}
+          >
+            {width === "half" ? <Square className="h-3 w-3" /> : <Columns2 className="h-3 w-3" />}
+          </button>
         )}
         {expandable && onToggleExpand && (
           <button
