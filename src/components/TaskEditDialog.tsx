@@ -343,7 +343,7 @@ const TaskEditDialog = ({
                                   onChange={(e) => setEditingSubtaskText(e.target.value)}
                                   onBlur={() => saveSubtaskTitle(sub.id)}
                                   onKeyDown={(e) => { if (e.key === "Enter") saveSubtaskTitle(sub.id); if (e.key === "Escape") setEditingSubtaskId(null); }}
-                                  className="flex-1 rounded border bg-card px-2 py-0.5 text-xs focus:outline-none focus:ring-2 focus:ring-ring/20"
+                                  className="flex-1 rounded border bg-card px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20"
                                 />
                               ) : (
                                 <span
