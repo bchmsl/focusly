@@ -62,7 +62,7 @@ const NoteEditDialog = ({
       setShowTagCreator(false);
       setConfirmDelete(false);
     }
-  }, [note, open]);
+  }, [note?.id, open]);
 
   if (!note) return null;
 
