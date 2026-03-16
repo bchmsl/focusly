@@ -227,8 +227,8 @@ const TodoList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject<
           )}
 
           <div
-            className="flex-1 min-w-0 cursor-default"
-            onClick={() => { if (hasContent && !isExpanded) toggleExpanded(task.id); }}
+            className="flex-1 min-w-0 cursor-pointer"
+            onClick={() => { setViewTask(task); setViewDialogOpen(true); }}
           >
             <span className={`text-sm transition-colors ${task.done ? "line-through text-muted-foreground" : ""}`}>
               {task.text}
