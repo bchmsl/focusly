@@ -140,7 +140,7 @@ const NoteEditDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
+      <DialogContent className="max-w-xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="sr-only">Edit Note</DialogTitle>
           <DialogDescription className="sr-only">Edit note details and tags</DialogDescription>
