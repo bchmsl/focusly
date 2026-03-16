@@ -74,7 +74,7 @@ const TaskEditDialog = ({
       setShowTagCreator(false);
       setConfirmDelete(false);
     }
-  }, [task, open]);
+  }, [task?.id, open]);
 
   if (!task) return null;
 
