@@ -4,6 +4,7 @@ import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-p
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import NoteEditDialog from "@/components/NoteEditDialog";
+import NoteViewDialog from "@/components/NoteViewDialog";
 
 interface Note {
   id: string;
@@ -30,6 +31,8 @@ const NotesList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject
   const [activeFilterTag, setActiveFilterTag] = useState<string | null>(null);
   const [editNote, setEditNote] = useState<Note | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [viewNote, setViewNote] = useState<Note | null>(null);
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const editDialogOpenRef = useRef(false);
   const deletedRef = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -165,8 +168,8 @@ const NotesList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject
           )}
 
           <div
-            className="flex-1 min-w-0 cursor-default"
-            onClick={() => { if (hasContent && !isExpanded) toggleExpanded(note.id); }}
+            className="flex-1 min-w-0 cursor-pointer"
+            onClick={() => { setViewNote(note); setViewDialogOpen(true); }}
           >
             <span className="text-sm">{note.title}</span>
             {!isExpanded && noteTags.length > 0 && (
@@ -215,7 +218,7 @@ const NotesList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject
             {hasBody && (
               <p
                 className="text-xs text-muted-foreground whitespace-pre-wrap leading-relaxed rounded-lg bg-muted/30 px-3 py-2 line-clamp-2 cursor-pointer hover:bg-muted/50 transition-colors"
-                onClick={() => { setEditNote(note); setEditDialogOpen(true); }}
+                onClick={() => { setViewNote(note); setViewDialogOpen(true); }}
                 title="Click to view full note"
               >
                 {note.body}
@@ -334,6 +337,22 @@ const NotesList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject
         onTagsChange={setTags}
         onNoteTagMapChange={setNoteTagMap}
         onNoteDeleted={handleNoteDeleted}
+      />
+
+      <NoteViewDialog
+        note={viewNote ? notes.find((n) => n.id === viewNote.id) || viewNote : null}
+        open={viewDialogOpen}
+        onOpenChange={setViewDialogOpen}
+        tags={tags}
+        noteTagMap={noteTagMap}
+        onEdit={() => {
+          setViewDialogOpen(false);
+          if (viewNote) {
+            setEditNote(viewNote);
+            setEditDialogOpen(true);
+            editDialogOpenRef.current = true;
+          }
+        }}
       />
     </div>
   );

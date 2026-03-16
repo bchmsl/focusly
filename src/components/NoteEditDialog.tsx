@@ -140,7 +140,7 @@ const NoteEditDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
+      <DialogContent className="max-w-xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="sr-only">Edit Note</DialogTitle>
           <DialogDescription className="sr-only">Edit note details and tags</DialogDescription>
@@ -167,8 +167,8 @@ const NoteEditDialog = ({
               onChange={(e) => setBody(e.target.value)}
               onBlur={() => saveBody(body)}
               placeholder="Write your note..."
-              rows={8}
-              className="w-full rounded-lg border bg-card px-3 py-2 text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20 resize-y transition-shadow"
+              rows={10}
+              className="w-full rounded-lg border bg-card px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20 resize-y transition-shadow"
             />
           </div>
 
