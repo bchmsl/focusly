@@ -168,8 +168,8 @@ const NotesList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject
           )}
 
           <div
-            className="flex-1 min-w-0 cursor-default"
-            onClick={() => { if (hasContent && !isExpanded) toggleExpanded(note.id); }}
+            className="flex-1 min-w-0 cursor-pointer"
+            onClick={() => { setViewNote(note); setViewDialogOpen(true); }}
           >
             <span className="text-sm">{note.title}</span>
             {!isExpanded && noteTags.length > 0 && (
