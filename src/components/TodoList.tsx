@@ -4,6 +4,7 @@ import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-p
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import TaskEditDialog from "@/components/TaskEditDialog";
+import TaskViewDialog from "@/components/TaskViewDialog";
 
 interface Task {
   id: string;
@@ -32,6 +33,8 @@ const TodoList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject<
   const [activeFilterTag, setActiveFilterTag] = useState<string | null>(null);
   const [editTask, setEditTask] = useState<Task | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [viewTask, setViewTask] = useState<Task | null>(null);
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const editDialogOpenRef = useRef(false);
   const deletedRef = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
