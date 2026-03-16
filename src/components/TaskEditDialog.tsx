@@ -220,8 +220,8 @@ const TaskEditDialog = ({
               onChange={(e) => setBody(e.target.value)}
               onBlur={() => saveBody(body)}
               placeholder="Add details or notes..."
-              rows={3}
-              className="w-full rounded-lg border bg-card px-3 py-2 text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20 resize-y transition-shadow"
+              rows={5}
+              className="w-full rounded-lg border bg-card px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20 resize-y transition-shadow"
             />
           </div>
 
