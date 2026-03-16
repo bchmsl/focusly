@@ -193,7 +193,7 @@ const TaskEditDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="sr-only">Edit Task</DialogTitle>
           <DialogDescription className="sr-only">Edit task details, subtasks, and tags</DialogDescription>
