@@ -338,6 +338,22 @@ const NotesList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject
         onNoteTagMapChange={setNoteTagMap}
         onNoteDeleted={handleNoteDeleted}
       />
+
+      <NoteViewDialog
+        note={viewNote ? notes.find((n) => n.id === viewNote.id) || viewNote : null}
+        open={viewDialogOpen}
+        onOpenChange={setViewDialogOpen}
+        tags={tags}
+        noteTagMap={noteTagMap}
+        onEdit={() => {
+          setViewDialogOpen(false);
+          if (viewNote) {
+            setEditNote(viewNote);
+            setEditDialogOpen(true);
+            editDialogOpenRef.current = true;
+          }
+        }}
+      />
     </div>
   );
 };
