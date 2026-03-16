@@ -218,7 +218,7 @@ const NotesList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject
             {hasBody && (
               <p
                 className="text-xs text-muted-foreground whitespace-pre-wrap leading-relaxed rounded-lg bg-muted/30 px-3 py-2 line-clamp-2 cursor-pointer hover:bg-muted/50 transition-colors"
-                onClick={() => { setEditNote(note); setEditDialogOpen(true); }}
+                onClick={() => { setViewNote(note); setViewDialogOpen(true); }}
                 title="Click to view full note"
               >
                 {note.body}
