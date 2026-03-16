@@ -4,6 +4,7 @@ import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-p
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import NoteEditDialog from "@/components/NoteEditDialog";
+import NoteViewDialog from "@/components/NoteViewDialog";
 
 interface Note {
   id: string;
@@ -30,6 +31,8 @@ const NotesList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject
   const [activeFilterTag, setActiveFilterTag] = useState<string | null>(null);
   const [editNote, setEditNote] = useState<Note | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [viewNote, setViewNote] = useState<Note | null>(null);
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const editDialogOpenRef = useRef(false);
   const deletedRef = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
