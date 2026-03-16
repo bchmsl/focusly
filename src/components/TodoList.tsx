@@ -427,6 +427,24 @@ const TodoList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject<
         onTaskTagMapChange={setTaskTagMap}
         onTaskDeleted={handleTaskDeleted}
       />
+
+      <TaskViewDialog
+        task={viewTask ? tasks.find(t => t.id === viewTask.id) || viewTask : null}
+        open={viewDialogOpen}
+        onOpenChange={setViewDialogOpen}
+        tasks={tasks}
+        tags={tags}
+        taskTagMap={taskTagMap}
+        onTasksChange={setTasks}
+        onEdit={() => {
+          setViewDialogOpen(false);
+          if (viewTask) {
+            setEditTask(viewTask);
+            setEditDialogOpen(true);
+            editDialogOpenRef.current = true;
+          }
+        }}
+      />
     </div>
   );
 };
