@@ -193,7 +193,7 @@ const TaskEditDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="sr-only">Edit Task</DialogTitle>
           <DialogDescription className="sr-only">Edit task details, subtasks, and tags</DialogDescription>
@@ -208,7 +208,7 @@ const TaskEditDialog = ({
               onChange={(e) => setTitle(e.target.value)}
               onBlur={() => saveTitle(title)}
               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); saveTitle(title); (e.target as HTMLInputElement).blur(); } }}
-              className="w-full rounded-lg border bg-card px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20 transition-shadow"
+              className="w-full rounded-lg border bg-card px-3 py-2.5 text-base placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20 transition-shadow"
             />
           </div>
 
@@ -220,8 +220,8 @@ const TaskEditDialog = ({
               onChange={(e) => setBody(e.target.value)}
               onBlur={() => saveBody(body)}
               placeholder="Add details or notes..."
-              rows={5}
-              className="w-full rounded-lg border bg-card px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20 resize-y transition-shadow"
+              rows={6}
+              className="w-full rounded-lg border bg-card px-3 py-2.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20 resize-y transition-shadow"
             />
           </div>
 
@@ -343,12 +343,12 @@ const TaskEditDialog = ({
                                   onChange={(e) => setEditingSubtaskText(e.target.value)}
                                   onBlur={() => saveSubtaskTitle(sub.id)}
                                   onKeyDown={(e) => { if (e.key === "Enter") saveSubtaskTitle(sub.id); if (e.key === "Escape") setEditingSubtaskId(null); }}
-                                  className="flex-1 rounded border bg-card px-2 py-0.5 text-xs focus:outline-none focus:ring-2 focus:ring-ring/20"
+                                  className="flex-1 rounded border bg-card px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20"
                                 />
                               ) : (
                                 <span
                                   onClick={() => { setEditingSubtaskId(sub.id); setEditingSubtaskText(sub.text); }}
-                                  className={`flex-1 text-xs cursor-text select-none ${sub.done ? "line-through text-muted-foreground" : ""}`}
+                                  className={`flex-1 text-sm cursor-text select-none ${sub.done ? "line-through text-muted-foreground" : ""}`}
                                 >
                                   {sub.text}
                                 </span>

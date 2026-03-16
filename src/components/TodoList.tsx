@@ -4,6 +4,7 @@ import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-p
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import TaskEditDialog from "@/components/TaskEditDialog";
+import TaskViewDialog from "@/components/TaskViewDialog";
 
 interface Task {
   id: string;
@@ -32,6 +33,8 @@ const TodoList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject<
   const [activeFilterTag, setActiveFilterTag] = useState<string | null>(null);
   const [editTask, setEditTask] = useState<Task | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [viewTask, setViewTask] = useState<Task | null>(null);
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const editDialogOpenRef = useRef(false);
   const deletedRef = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -224,8 +227,8 @@ const TodoList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject<
           )}
 
           <div
-            className="flex-1 min-w-0 cursor-default"
-            onClick={() => { if (hasContent && !isExpanded) toggleExpanded(task.id); }}
+            className="flex-1 min-w-0 cursor-pointer"
+            onClick={() => { setViewTask(task); setViewDialogOpen(true); }}
           >
             <span className={`text-sm transition-colors ${task.done ? "line-through text-muted-foreground" : ""}`}>
               {task.text}
@@ -423,6 +426,24 @@ const TodoList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject<
         onTagsChange={setTags}
         onTaskTagMapChange={setTaskTagMap}
         onTaskDeleted={handleTaskDeleted}
+      />
+
+      <TaskViewDialog
+        task={viewTask ? tasks.find(t => t.id === viewTask.id) || viewTask : null}
+        open={viewDialogOpen}
+        onOpenChange={setViewDialogOpen}
+        tasks={tasks}
+        tags={tags}
+        taskTagMap={taskTagMap}
+        onTasksChange={setTasks}
+        onEdit={() => {
+          setViewDialogOpen(false);
+          if (viewTask) {
+            setEditTask(viewTask);
+            setEditDialogOpen(true);
+            editDialogOpenRef.current = true;
+          }
+        }}
       />
     </div>
   );
