@@ -167,8 +167,8 @@ const NoteEditDialog = ({
               onChange={(e) => setBody(e.target.value)}
               onBlur={() => saveBody(body)}
               placeholder="Write your note..."
-              rows={10}
-              className="w-full rounded-lg border bg-card px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20 resize-y transition-shadow"
+              rows={12}
+              className="w-full rounded-lg border bg-card px-3 py-2.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20 resize-y transition-shadow"
             />
           </div>
 

@@ -348,7 +348,7 @@ const TaskEditDialog = ({
                               ) : (
                                 <span
                                   onClick={() => { setEditingSubtaskId(sub.id); setEditingSubtaskText(sub.text); }}
-                                  className={`flex-1 text-xs cursor-text select-none ${sub.done ? "line-through text-muted-foreground" : ""}`}
+                                  className={`flex-1 text-sm cursor-text select-none ${sub.done ? "line-through text-muted-foreground" : ""}`}
                                 >
                                   {sub.text}
                                 </span>
