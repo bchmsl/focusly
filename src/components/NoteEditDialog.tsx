@@ -155,7 +155,7 @@ const NoteEditDialog = ({
               onChange={(e) => setTitle(e.target.value)}
               onBlur={() => saveTitle(title)}
               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); saveTitle(title); (e.target as HTMLInputElement).blur(); } }}
-              className="w-full rounded-lg border bg-card px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20 transition-shadow"
+              className="w-full rounded-lg border bg-card px-3 py-2.5 text-base placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20 transition-shadow"
             />
           </div>
 
