@@ -106,7 +106,7 @@ const TaskEditDialog = ({
     const text = subtaskInput.trim();
     if (!text || !user) return;
     const id = crypto.randomUUID();
-    const position = subtasks.length;
+    const position = subtasks.length > 0 ? Math.max(...subtasks.map(t => t.position)) + 1 : 0;
     const newTask: Task = { id, text, body: null, done: false, position, parent_id: task.id };
     onTasksChange([...tasks, newTask]);
     setSubtaskInput("");

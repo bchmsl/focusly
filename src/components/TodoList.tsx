@@ -94,7 +94,7 @@ const TodoList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject<
     const value = input.trim();
     if (!value || !user) return;
     const id = crypto.randomUUID();
-    const position = topLevel.length;
+    const position = topLevel.length > 0 ? Math.max(...topLevel.map(t => t.position)) + 1 : 0;
     const newTask: Task = { id, text: value, body: null, done: false, position, parent_id: null };
     setTasks((prev) => [...prev, newTask]);
     setInput("");
