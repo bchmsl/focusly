@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import TaskEditDialog from "@/components/TaskEditDialog";
 import TaskViewDialog from "@/components/TaskViewDialog";
+import LinkifiedText from "@/components/LinkifiedText";
 
 interface Task {
   id: string;
