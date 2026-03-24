@@ -177,7 +177,7 @@ const NotesList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject
             className="flex-1 min-w-0 cursor-pointer"
             onClick={() => { setViewNote(note); setViewDialogOpen(true); }}
           >
-            <span className="text-sm">{note.title}</span>
+            <span className="text-sm"><LinkifiedText text={note.title} /></span>
             {!isExpanded && noteTags.length > 0 && (
               <span className="ml-1.5 inline-flex gap-1 align-middle">
                 {noteTags.map((tag) => (

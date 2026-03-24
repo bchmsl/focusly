@@ -296,7 +296,7 @@ const TodoList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject<
             {/* Body / notes */}
             {task.body && (
               <p className="text-xs text-muted-foreground whitespace-pre-wrap leading-relaxed rounded-lg bg-muted/30 px-3 py-2">
-                {task.body}
+                <LinkifiedText text={task.body} />
               </p>
             )}
 

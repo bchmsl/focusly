@@ -144,7 +144,7 @@ const TaskViewDialog = ({
                                 <Check className="h-3 w-3" />
                               </button>
                               <span className={`flex-1 text-sm ${sub.done ? "line-through text-muted-foreground" : ""}`}>
-                                {sub.text}
+                                <LinkifiedText text={sub.text} />
                               </span>
                             </div>
                           )}

@@ -60,7 +60,7 @@ const NoteViewDialog = ({ note, open, onOpenChange, tags, noteTagMap, onEdit }: 
           {/* Body */}
           {note.body ? (
             <div className="text-sm text-foreground/90 whitespace-pre-wrap leading-relaxed rounded-lg bg-muted/30 px-4 py-3 min-h-[6rem]">
-              {note.body}
+              <LinkifiedText text={note.body} />
             </div>
           ) : (
             <p className="text-sm text-muted-foreground italic py-4 text-center">No content yet.</p>
