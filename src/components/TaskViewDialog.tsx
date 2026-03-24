@@ -105,7 +105,7 @@ const TaskViewDialog = ({
           {/* Body / notes */}
           {task.body ? (
             <div className="text-sm text-foreground/90 whitespace-pre-wrap leading-relaxed rounded-lg bg-muted/30 px-4 py-3">
-              {task.body}
+              <LinkifiedText text={task.body} />
             </div>
           ) : (
             <p className="text-sm text-muted-foreground italic">No notes.</p>
