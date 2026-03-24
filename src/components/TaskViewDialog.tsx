@@ -81,7 +81,7 @@ const TaskViewDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-lg font-semibold pr-8">{task.text}</DialogTitle>
+          <DialogTitle className="text-lg font-semibold pr-8"><LinkifiedText text={task.text} /></DialogTitle>
           <DialogDescription className="sr-only">View task details</DialogDescription>
         </DialogHeader>
 
