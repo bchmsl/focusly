@@ -100,6 +100,15 @@ const TodoList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject<
     setInput("");
     inputRef.current?.focus();
     await supabase.from("tasks").insert({ id, user_id: user.id, text: value, done: false, position, parent_id: null } as any);
+    // Auto-attach active filter tag
+    if (activeFilterTag) {
+      setTaskTagMap((prev) => ({ ...prev, [id]: [...(prev[id] || []), activeFilterTag] }));
+      await supabase.from("task_tags").insert({ task_id: id, tag_id: activeFilterTag } as any);
+    }
+    // Auto-open edit dialog for the new task
+    setEditTask(newTask);
+    setEditDialogOpen(true);
+    editDialogOpenRef.current = true;
   };
 
   const toggleTask = async (id: string) => {
