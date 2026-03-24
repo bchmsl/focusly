@@ -36,7 +36,7 @@ const NoteViewDialog = ({ note, open, onOpenChange, tags, noteTagMap, onEdit }: 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-base font-semibold pr-8">{note.title}</DialogTitle>
+          <DialogTitle className="text-base font-semibold pr-8"><LinkifiedText text={note.title} /></DialogTitle>
           <DialogDescription className="sr-only">View note content</DialogDescription>
         </DialogHeader>
 
