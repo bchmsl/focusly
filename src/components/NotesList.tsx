@@ -88,6 +88,11 @@ const NotesList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject
     setInput("");
     inputRef.current?.focus();
     await supabase.from("notes").insert({ id, user_id: user.id, title: value, position } as any);
+    // Auto-attach active filter tag
+    if (activeFilterTag) {
+      setNoteTagMap((prev) => ({ ...prev, [id]: [...(prev[id] || []), activeFilterTag] }));
+      await supabase.from("note_tags").insert({ note_id: id, tag_id: activeFilterTag } as any);
+    }
     // Auto-open edit dialog for the new note
     setEditNote(newNote);
     setEditDialogOpen(true);
