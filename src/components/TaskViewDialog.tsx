@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Check, GripVertical, Pencil } from "lucide-react";
+import LinkifiedText from "@/components/LinkifiedText";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import { supabase } from "@/integrations/supabase/client";
