@@ -17,9 +17,27 @@ const TAG_COLORS = [
   "#8b5cf6", "#ef4444", "#14b8a6", "#f97316", "#64748b",
 ];
 
-const SettingsPanel = ({ onTagsChanged }: { onTagsChanged?: () => void }) => {
+interface PushNotificationsProps {
+  isSupported: boolean;
+  permission: NotificationPermission | "default";
+  subscribed: boolean;
+  subscribe: () => Promise<void>;
+}
+
+const COLOR_MODES: { id: ColorMode; label: string; icon: typeof Sun }[] = [
+  { id: "light", label: "Light", icon: Sun },
+  { id: "dark", label: "Dark", icon: Moon },
+  { id: "system", label: "System", icon: Monitor },
+];
+
+const SettingsPanel = ({ onTagsChanged, onSignOut, pushNotifications }: {
+  onTagsChanged?: () => void;
+  onSignOut?: () => void;
+  pushNotifications?: PushNotificationsProps;
+}) => {
   const { user } = useAuth();
   const { settings, updateSettings } = useSettings();
+  const { themeId, colorMode, setThemeId, setColorMode } = useTheme();
   const [open, setOpen] = useState(false);
   const [tags, setTags] = useState<TagType[]>([]);
   const [editingTagId, setEditingTagId] = useState<string | null>(null);
