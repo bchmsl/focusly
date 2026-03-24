@@ -4,11 +4,11 @@ import ClockDisplay from "@/components/ClockDisplay";
 import TodoList from "@/components/TodoList";
 import NotesList from "@/components/NotesList";
 import {
-  Timer, LogOut, Bell, BellOff, Maximize2, Minimize2,
+  Timer, Maximize2, Minimize2,
   ChevronDown, ChevronUp, GripVertical,
 } from "lucide-react";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
-import ThemeToggle from "@/components/ThemeToggle";
+
 import SettingsPanel from "@/components/SettingsPanel";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -288,23 +288,11 @@ const Index = () => {
           <h1 className="text-lg font-semibold">Focusly</h1>
           <div className="ml-auto flex items-center gap-3">
             <span className="text-sm text-muted-foreground hidden sm:inline">{user?.email}</span>
-            {isSupported && (
-              permission !== "granted" || !subscribed ? (
-                <button onClick={() => subscribe()} className="flex h-9 items-center gap-1.5 rounded-lg px-2.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" title="Enable push notifications">
-                  <BellOff className="h-4 w-4" />
-                </button>
-              ) : (
-                <div className="flex h-9 items-center px-2.5 text-primary" title="Push notifications enabled">
-                  <Bell className="h-4 w-4" />
-                </div>
-              )
-            )}
-            <SettingsPanel onTagsChanged={() => { todoReloadRef.current?.(); notesReloadRef.current?.(); }} />
-            <ThemeToggle />
-            <button onClick={handleSignOut} className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
-              <LogOut className="h-4 w-4" />
-              <span className="hidden sm:inline">Sign out</span>
-            </button>
+            <SettingsPanel
+              onTagsChanged={() => { todoReloadRef.current?.(); notesReloadRef.current?.(); }}
+              onSignOut={handleSignOut}
+              pushNotifications={{ isSupported, permission, subscribed, subscribe }}
+            />
           </div>
         </div>
       </header>
