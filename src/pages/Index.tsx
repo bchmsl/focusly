@@ -4,7 +4,7 @@ import ClockDisplay from "@/components/ClockDisplay";
 import TodoList from "@/components/TodoList";
 import NotesList from "@/components/NotesList";
 import {
-  Timer, LogOut, Bell, BellOff, Maximize2, Minimize2,
+  Timer, Maximize2, Minimize2,
   ChevronDown, ChevronUp, GripVertical,
 } from "lucide-react";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
