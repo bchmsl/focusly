@@ -227,7 +227,7 @@ const NotesList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject
                 onClick={() => { setViewNote(note); setViewDialogOpen(true); }}
                 title="Click to view full note"
               >
-                {note.body}
+                <LinkifiedText text={note.body!} />
               </p>
             )}
           </div>
