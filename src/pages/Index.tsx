@@ -8,7 +8,7 @@ import {
   ChevronDown, ChevronUp, GripVertical,
 } from "lucide-react";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
-import ThemeToggle from "@/components/ThemeToggle";
+
 import SettingsPanel from "@/components/SettingsPanel";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";

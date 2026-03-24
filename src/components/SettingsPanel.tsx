@@ -327,6 +327,96 @@ const SettingsPanel = ({ onTagsChanged, onSignOut, pushNotifications }: {
                 </div>
               </section>
             )}
+            {/* Appearance */}
+            <section className="space-y-4">
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <Palette className="h-4 w-4 text-primary" />
+                Appearance
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-2">Theme</p>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {THEMES.map((t) => (
+                    <button
+                      key={t.id}
+                      onClick={() => setThemeId(t.id)}
+                      className={`flex flex-col items-center gap-1.5 rounded-lg px-2 py-2 text-[11px] transition-colors ${
+                        themeId === t.id
+                          ? "bg-accent font-medium text-accent-foreground"
+                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      }`}
+                    >
+                      <span
+                        className={`h-5 w-5 rounded-full ring-2 ring-offset-2 ring-offset-card transition-shadow ${
+                          themeId === t.id ? "ring-foreground/40" : "ring-transparent"
+                        }`}
+                        style={{ backgroundColor: t.accent }}
+                      />
+                      {t.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-2">Mode</p>
+                <div className="flex gap-1">
+                  {COLOR_MODES.map((m) => {
+                    const Icon = m.icon;
+                    return (
+                      <button
+                        key={m.id}
+                        onClick={() => setColorMode(m.id)}
+                        className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-1.5 text-[11px] transition-colors ${
+                          colorMode === m.id
+                            ? "bg-accent font-medium text-accent-foreground"
+                            : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                        }`}
+                      >
+                        <Icon className="h-3.5 w-3.5" />
+                        {m.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </section>
+
+            {/* Notifications */}
+            {pushNotifications?.isSupported && (
+              <section className="space-y-4">
+                <div className="flex items-center gap-2 text-sm font-medium">
+                  <Bell className="h-4 w-4 text-primary" />
+                  Notifications
+                </div>
+                {pushNotifications.permission !== "granted" || !pushNotifications.subscribed ? (
+                  <button
+                    onClick={() => pushNotifications.subscribe()}
+                    className="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors w-full"
+                  >
+                    <BellOff className="h-4 w-4" />
+                    Enable push notifications
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-2 text-sm text-primary">
+                    <Bell className="h-4 w-4" />
+                    Push notifications enabled
+                  </div>
+                )}
+              </section>
+            )}
+
+            {/* Sign Out */}
+            {onSignOut && (
+              <section className="pt-2 border-t">
+                <button
+                  onClick={onSignOut}
+                  className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors w-full"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Sign out
+                </button>
+              </section>
+            )}
           </div>
         </div>
       </div>
