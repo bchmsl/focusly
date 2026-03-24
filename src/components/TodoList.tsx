@@ -184,7 +184,7 @@ const TodoList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject<
         <Check className="h-2.5 w-2.5" />
       </button>
       <span className={`flex-1 text-xs ${sub.done ? "line-through text-muted-foreground" : ""}`}>
-        {sub.text}
+        <LinkifiedText text={sub.text} />
       </span>
     </div>
   );
