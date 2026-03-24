@@ -1,5 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Pencil } from "lucide-react";
+import LinkifiedText from "@/components/LinkifiedText";
 
 interface Note {
   id: string;
@@ -35,7 +36,7 @@ const NoteViewDialog = ({ note, open, onOpenChange, tags, noteTagMap, onEdit }: 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-base font-semibold pr-8">{note.title}</DialogTitle>
+          <DialogTitle className="text-base font-semibold pr-8"><LinkifiedText text={note.title} /></DialogTitle>
           <DialogDescription className="sr-only">View note content</DialogDescription>
         </DialogHeader>
 
@@ -59,7 +60,7 @@ const NoteViewDialog = ({ note, open, onOpenChange, tags, noteTagMap, onEdit }: 
           {/* Body */}
           {note.body ? (
             <div className="text-sm text-foreground/90 whitespace-pre-wrap leading-relaxed rounded-lg bg-muted/30 px-4 py-3 min-h-[6rem]">
-              {note.body}
+              <LinkifiedText text={note.body} />
             </div>
           ) : (
             <p className="text-sm text-muted-foreground italic py-4 text-center">No content yet.</p>

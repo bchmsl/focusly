@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import NoteEditDialog from "@/components/NoteEditDialog";
 import NoteViewDialog from "@/components/NoteViewDialog";
+import LinkifiedText from "@/components/LinkifiedText";
 
 interface Note {
   id: string;
@@ -176,7 +177,7 @@ const NotesList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject
             className="flex-1 min-w-0 cursor-pointer"
             onClick={() => { setViewNote(note); setViewDialogOpen(true); }}
           >
-            <span className="text-sm">{note.title}</span>
+            <span className="text-sm"><LinkifiedText text={note.title} /></span>
             {!isExpanded && noteTags.length > 0 && (
               <span className="ml-1.5 inline-flex gap-1 align-middle">
                 {noteTags.map((tag) => (
@@ -226,7 +227,7 @@ const NotesList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject
                 onClick={() => { setViewNote(note); setViewDialogOpen(true); }}
                 title="Click to view full note"
               >
-                {note.body}
+                <LinkifiedText text={note.body!} />
               </p>
             )}
           </div>

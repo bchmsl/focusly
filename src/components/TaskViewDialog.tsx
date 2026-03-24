@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Check, GripVertical, Pencil } from "lucide-react";
+import LinkifiedText from "@/components/LinkifiedText";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import { supabase } from "@/integrations/supabase/client";
@@ -80,7 +81,7 @@ const TaskViewDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-lg font-semibold pr-8">{task.text}</DialogTitle>
+          <DialogTitle className="text-lg font-semibold pr-8"><LinkifiedText text={task.text} /></DialogTitle>
           <DialogDescription className="sr-only">View task details</DialogDescription>
         </DialogHeader>
 
@@ -104,7 +105,7 @@ const TaskViewDialog = ({
           {/* Body / notes */}
           {task.body ? (
             <div className="text-sm text-foreground/90 whitespace-pre-wrap leading-relaxed rounded-lg bg-muted/30 px-4 py-3">
-              {task.body}
+              <LinkifiedText text={task.body} />
             </div>
           ) : (
             <p className="text-sm text-muted-foreground italic">No notes.</p>
@@ -143,7 +144,7 @@ const TaskViewDialog = ({
                                 <Check className="h-3 w-3" />
                               </button>
                               <span className={`flex-1 text-sm ${sub.done ? "line-through text-muted-foreground" : ""}`}>
-                                {sub.text}
+                                <LinkifiedText text={sub.text} />
                               </span>
                             </div>
                           )}

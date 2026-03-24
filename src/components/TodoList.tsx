@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import TaskEditDialog from "@/components/TaskEditDialog";
 import TaskViewDialog from "@/components/TaskViewDialog";
+import LinkifiedText from "@/components/LinkifiedText";
 
 interface Task {
   id: string;
@@ -183,7 +184,7 @@ const TodoList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject<
         <Check className="h-2.5 w-2.5" />
       </button>
       <span className={`flex-1 text-xs ${sub.done ? "line-through text-muted-foreground" : ""}`}>
-        {sub.text}
+        <LinkifiedText text={sub.text} />
       </span>
     </div>
   );
@@ -240,7 +241,7 @@ const TodoList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject<
             onClick={() => { setViewTask(task); setViewDialogOpen(true); }}
           >
             <span className={`text-sm transition-colors ${task.done ? "line-through text-muted-foreground" : ""}`}>
-              {task.text}
+              <LinkifiedText text={task.text} />
             </span>
             {/* Inline tag pills (collapsed view) */}
             {!isExpanded && taskTags.length > 0 && (
@@ -295,7 +296,7 @@ const TodoList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject<
             {/* Body / notes */}
             {task.body && (
               <p className="text-xs text-muted-foreground whitespace-pre-wrap leading-relaxed rounded-lg bg-muted/30 px-3 py-2">
-                {task.body}
+                <LinkifiedText text={task.body} />
               </p>
             )}
 
