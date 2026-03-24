@@ -241,7 +241,7 @@ const TodoList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject<
             onClick={() => { setViewTask(task); setViewDialogOpen(true); }}
           >
             <span className={`text-sm transition-colors ${task.done ? "line-through text-muted-foreground" : ""}`}>
-              {task.text}
+              <LinkifiedText text={task.text} />
             </span>
             {/* Inline tag pills (collapsed view) */}
             {!isExpanded && taskTags.length > 0 && (
