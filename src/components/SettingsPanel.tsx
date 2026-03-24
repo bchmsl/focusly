@@ -21,7 +21,7 @@ interface PushNotificationsProps {
   isSupported: boolean;
   permission: NotificationPermission | "default";
   subscribed: boolean;
-  subscribe: () => Promise<void>;
+  subscribe: () => Promise<any>;
 }
 
 const COLOR_MODES: { id: ColorMode; label: string; icon: typeof Sun }[] = [
