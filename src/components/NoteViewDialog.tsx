@@ -1,5 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Pencil } from "lucide-react";
+import LinkifiedText from "@/components/LinkifiedText";
 
 interface Note {
   id: string;
