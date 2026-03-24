@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import NoteEditDialog from "@/components/NoteEditDialog";
 import NoteViewDialog from "@/components/NoteViewDialog";
+import LinkifiedText from "@/components/LinkifiedText";
 
 interface Note {
   id: string;
