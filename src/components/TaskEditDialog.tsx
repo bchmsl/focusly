@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { X, Plus, Tag, Check, GripVertical, Trash2 } from "lucide-react";
+import FormattingToolbar from "@/components/FormattingToolbar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import { supabase } from "@/integrations/supabase/client";
@@ -63,6 +64,9 @@ const TaskEditDialog = ({
   const [newTagColor, setNewTagColor] = useState(TAG_COLORS[0]);
   const [newTagEmoji, setNewTagEmoji] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const titleRef = useRef<HTMLInputElement>(null);
+  const bodyRef = useRef<HTMLTextAreaElement>(null);
+  const subtaskEditRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (task && open) {
@@ -201,21 +205,24 @@ const TaskEditDialog = ({
 
         <div className="space-y-5">
           {/* Title */}
-          <div className="space-y-1.5">
+          <div className="space-y-1.5 relative">
             <label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Title</label>
             <input
+              ref={titleRef}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               onBlur={() => saveTitle(title)}
               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); saveTitle(title); (e.target as HTMLInputElement).blur(); } }}
               className="w-full rounded-lg border bg-card px-3 py-2.5 text-base placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20 transition-shadow"
             />
+            <FormattingToolbar targetRef={titleRef} value={title} onChange={setTitle} />
           </div>
 
           {/* Notes */}
-          <div className="space-y-1.5">
+          <div className="space-y-1.5 relative">
             <label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Notes</label>
             <textarea
+              ref={bodyRef}
               value={body}
               onChange={(e) => setBody(e.target.value)}
               onBlur={() => saveBody(body)}
@@ -223,6 +230,7 @@ const TaskEditDialog = ({
               rows={6}
               className="w-full rounded-lg border bg-card px-3 py-2.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20 resize-y transition-shadow"
             />
+            <FormattingToolbar targetRef={bodyRef} value={body} onChange={setBody} />
           </div>
 
           {/* Tags */}
@@ -337,14 +345,18 @@ const TaskEditDialog = ({
                                 <Check className="h-2.5 w-2.5" />
                               </span>
                               {editingSubtaskId === sub.id ? (
-                                <input
-                                  autoFocus
-                                  value={editingSubtaskText}
-                                  onChange={(e) => setEditingSubtaskText(e.target.value)}
-                                  onBlur={() => saveSubtaskTitle(sub.id)}
-                                  onKeyDown={(e) => { if (e.key === "Enter") saveSubtaskTitle(sub.id); if (e.key === "Escape") setEditingSubtaskId(null); }}
-                                  className="flex-1 rounded border bg-card px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20"
-                                />
+                                <>
+                                  <input
+                                    ref={subtaskEditRef}
+                                    autoFocus
+                                    value={editingSubtaskText}
+                                    onChange={(e) => setEditingSubtaskText(e.target.value)}
+                                    onBlur={() => saveSubtaskTitle(sub.id)}
+                                    onKeyDown={(e) => { if (e.key === "Enter") saveSubtaskTitle(sub.id); if (e.key === "Escape") setEditingSubtaskId(null); }}
+                                    className="flex-1 rounded border bg-card px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20"
+                                  />
+                                  <FormattingToolbar targetRef={subtaskEditRef} value={editingSubtaskText} onChange={setEditingSubtaskText} />
+                                </>
                               ) : (
                                 <span
                                   onClick={() => { setEditingSubtaskId(sub.id); setEditingSubtaskText(sub.text); }}

@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { X, Plus, Tag, Trash2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import FormattingToolbar from "@/components/FormattingToolbar";
 
 interface Note {
   id: string;
@@ -54,6 +55,8 @@ const NoteEditDialog = ({
   const [newTagColor, setNewTagColor] = useState(TAG_COLORS[0]);
   const [newTagEmoji, setNewTagEmoji] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const titleRef = useRef<HTMLInputElement>(null);
+  const bodyRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     if (note && open) {
@@ -148,21 +151,24 @@ const NoteEditDialog = ({
 
         <div className="space-y-5">
           {/* Title */}
-          <div className="space-y-1.5">
+          <div className="space-y-1.5 relative">
             <label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Title</label>
             <input
+              ref={titleRef}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               onBlur={() => saveTitle(title)}
               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); saveTitle(title); (e.target as HTMLInputElement).blur(); } }}
               className="w-full rounded-lg border bg-card px-3 py-2.5 text-base placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20 transition-shadow"
             />
+            <FormattingToolbar targetRef={titleRef} value={title} onChange={setTitle} />
           </div>
 
           {/* Body */}
-          <div className="space-y-1.5">
+          <div className="space-y-1.5 relative">
             <label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Content</label>
             <textarea
+              ref={bodyRef}
               value={body}
               onChange={(e) => setBody(e.target.value)}
               onBlur={() => saveBody(body)}
@@ -170,6 +176,7 @@ const NoteEditDialog = ({
               rows={12}
               className="w-full rounded-lg border bg-card px-3 py-2.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20 resize-y transition-shadow"
             />
+            <FormattingToolbar targetRef={bodyRef} value={body} onChange={setBody} />
           </div>
 
           {/* Tags */}
