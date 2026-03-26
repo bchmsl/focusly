@@ -1,6 +1,5 @@
 import { useRef } from "react";
 import { Bold, Italic, Underline, Code } from "lucide-react";
-import LinkifiedText from "@/components/LinkifiedText";
 
 interface FormattingToolbarProps {
   targetRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement>;
@@ -14,8 +13,6 @@ const FORMATS = [
   { icon: Underline, wrap: ["__", "__"], label: "Underline" },
   { icon: Code, wrap: ["`", "`"], label: "Code" },
 ] as const;
-
-const HAS_FORMATTING = /(\*\*|__|`|\*(?!\*))/;
 
 const FormattingToolbar = ({ targetRef, value, onChange }: FormattingToolbarProps) => {
   const toolbarRef = useRef<HTMLDivElement>(null);
@@ -53,32 +50,22 @@ const FormattingToolbar = ({ targetRef, value, onChange }: FormattingToolbarProp
   };
 
   return (
-    <div className="space-y-1.5 mt-1">
-      {/* Toolbar - always visible */}
-      <div
-        ref={toolbarRef}
-        className="flex items-center gap-0.5 rounded-lg border bg-popover px-1 py-1 shadow-sm w-fit"
-        onMouseDown={(e) => e.preventDefault()}
-      >
-        {FORMATS.map(({ icon: Icon, wrap, label }) => (
-          <button
-            key={label}
-            type="button"
-            onClick={() => applyFormat(wrap[0], wrap[1])}
-            className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-            title={label}
-          >
-            <Icon className="h-3.5 w-3.5" />
-          </button>
-        ))}
-      </div>
-
-      {/* Live preview */}
-      {HAS_FORMATTING.test(value) && (
-        <div className="rounded-lg border border-dashed bg-muted/20 px-3 py-2 text-sm">
-          <LinkifiedText text={value} />
-        </div>
-      )}
+    <div
+      ref={toolbarRef}
+      className="flex items-center gap-0.5 rounded-lg border bg-popover px-1 py-1 shadow-sm w-fit mt-1"
+      onMouseDown={(e) => e.preventDefault()}
+    >
+      {FORMATS.map(({ icon: Icon, wrap, label }) => (
+        <button
+          key={label}
+          type="button"
+          onClick={() => applyFormat(wrap[0], wrap[1])}
+          className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+          title={label}
+        >
+          <Icon className="h-3.5 w-3.5" />
+        </button>
+      ))}
     </div>
   );
 };
