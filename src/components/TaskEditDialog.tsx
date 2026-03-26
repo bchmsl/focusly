@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { X, Plus, Tag, Check, GripVertical, Trash2 } from "lucide-react";
 import FormattingToolbar from "@/components/FormattingToolbar";
+import RichTextInput from "@/components/RichTextInput";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 import { supabase } from "@/integrations/supabase/client";
@@ -207,13 +208,12 @@ const TaskEditDialog = ({
           {/* Title */}
           <div className="space-y-1.5 relative">
             <label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Title</label>
-            <input
-              ref={titleRef}
+            <RichTextInput
+              inputRef={titleRef}
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={setTitle}
               onBlur={() => saveTitle(title)}
               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); saveTitle(title); (e.target as HTMLInputElement).blur(); } }}
-              className="w-full rounded-lg border bg-card px-3 py-2.5 text-base placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20 transition-shadow"
             />
             <FormattingToolbar targetRef={titleRef} value={title} onChange={setTitle} />
           </div>
@@ -221,14 +221,14 @@ const TaskEditDialog = ({
           {/* Notes */}
           <div className="space-y-1.5 relative">
             <label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Notes</label>
-            <textarea
-              ref={bodyRef}
+            <RichTextInput
+              inputRef={bodyRef}
               value={body}
-              onChange={(e) => setBody(e.target.value)}
+              onChange={setBody}
               onBlur={() => saveBody(body)}
               placeholder="Add details or notes..."
+              multiline
               rows={6}
-              className="w-full rounded-lg border bg-card px-3 py-2.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20 resize-y transition-shadow"
             />
             <FormattingToolbar targetRef={bodyRef} value={body} onChange={setBody} />
           </div>
