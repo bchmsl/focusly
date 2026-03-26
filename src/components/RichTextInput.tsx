@@ -29,7 +29,6 @@ const RichTextInput = ({
   const internalRef = useRef<HTMLInputElement & HTMLTextAreaElement>(null);
   const ref = (inputRef as any) || internalRef;
 
-  // Sync scroll between textarea and overlay
   const overlayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -57,16 +56,16 @@ const RichTextInput = ({
           onChange={(e) => onChange(e.target.value)}
           onBlur={onBlur}
           onKeyDown={onKeyDown}
-          placeholder={placeholder}
+          placeholder={!value ? placeholder : undefined}
           rows={rows}
           autoFocus={autoFocus}
-          className={`${baseClasses} text-sm resize-y relative z-[1] text-transparent caret-foreground selection:bg-primary/20 ${className}`}
-          style={{ WebkitTextFillColor: "transparent" }}
+          className={`${baseClasses} text-sm resize-y relative selection:bg-primary/20 ${className}`}
+          style={{ color: "transparent", caretColor: "hsl(var(--foreground))", WebkitTextFillColor: "transparent" }}
         />
         <div
           ref={overlayRef}
           aria-hidden
-          className="absolute inset-0 rounded-lg px-3 py-2.5 text-sm pointer-events-none overflow-hidden whitespace-pre-wrap break-words border border-transparent"
+          className="absolute inset-0 rounded-lg px-3 py-2.5 text-sm pointer-events-none overflow-hidden whitespace-pre-wrap break-words border border-transparent z-[1]"
         >
           {value ? (
             <LinkifiedText text={value} />
@@ -86,14 +85,14 @@ const RichTextInput = ({
         onChange={(e) => onChange(e.target.value)}
         onBlur={onBlur}
         onKeyDown={onKeyDown}
-        placeholder={placeholder}
+        placeholder={!value ? placeholder : undefined}
         autoFocus={autoFocus}
-        className={`${baseClasses} text-base relative z-[1] text-transparent caret-foreground selection:bg-primary/20 ${className}`}
-        style={{ WebkitTextFillColor: "transparent" }}
+        className={`${baseClasses} text-base relative selection:bg-primary/20 ${className}`}
+        style={{ color: "transparent", caretColor: "hsl(var(--foreground))", WebkitTextFillColor: "transparent" }}
       />
       <div
         aria-hidden
-        className="absolute inset-0 rounded-lg px-3 py-2.5 text-base pointer-events-none overflow-hidden whitespace-nowrap text-ellipsis border border-transparent flex items-center"
+        className="absolute inset-0 rounded-lg px-3 py-2.5 text-base pointer-events-none overflow-hidden whitespace-nowrap text-ellipsis border border-transparent z-[1] flex items-center"
       >
         {value ? (
           <LinkifiedText text={value} className="truncate" />
