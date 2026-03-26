@@ -1,13 +1,6 @@
 import React from "react";
 
-const URL_REGEX = /(https?:\/\/[^\s<>"')\]},]+)/;
-const BOLD_REGEX = /\*\*(.+?)\*\*/;
-const ITALIC_REGEX = /(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/;
-const UNDERLINE_REGEX = /__(.+?)__/;
-const CODE_REGEX = /`([^`]+)`/;
-
-// Combined regex that matches any token
-const COMBINED_REGEX = /(https?:\/\/[^\s<>"')\]},]+|\*\*(.+?)\*\*|(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)|__(.+?)__|`([^`]+)`)/g;
+const COMBINED_PATTERN = /(https?:\/\/[^\s<>"')\]},]+|\*\*(.+?)\*\*|(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)|__(.+?)__|`([^`]+)`)/g;
 
 interface LinkifiedTextProps {
   text: string;
@@ -19,19 +12,18 @@ const parseFormattedText = (text: string): React.ReactNode[] => {
   let lastIndex = 0;
   let key = 0;
 
-  // Reset lastIndex for global regex
-  COMBINED_REGEX.lastIndex = 0;
+  // Create a NEW regex instance each call to avoid shared lastIndex state
+  const regex = new RegExp(COMBINED_PATTERN.source, COMBINED_PATTERN.flags);
 
   let match: RegExpExecArray | null;
-  while ((match = COMBINED_REGEX.exec(text)) !== null) {
-    // Add text before match
+  while ((match = regex.exec(text)) !== null) {
     if (match.index > lastIndex) {
       result.push(<React.Fragment key={key++}>{text.slice(lastIndex, match.index)}</React.Fragment>);
     }
 
     const full = match[0];
 
-    if (URL_REGEX.test(full) && full.startsWith("http")) {
+    if (full.startsWith("http")) {
       result.push(
         <a
           key={key++}
@@ -45,22 +37,18 @@ const parseFormattedText = (text: string): React.ReactNode[] => {
         </a>
       );
     } else if (match[2] !== undefined) {
-      // Bold **text**
       result.push(
         <strong key={key++} className="font-bold">{parseFormattedText(match[2])}</strong>
       );
     } else if (match[4] !== undefined) {
-      // Underline __text__
       result.push(
         <span key={key++} className="underline underline-offset-2 decoration-foreground/50">{parseFormattedText(match[4])}</span>
       );
     } else if (match[3] !== undefined) {
-      // Italic *text*
       result.push(
         <em key={key++} className="italic">{parseFormattedText(match[3])}</em>
       );
     } else if (match[5] !== undefined) {
-      // Code `text`
       result.push(
         <code
           key={key++}
@@ -74,7 +62,6 @@ const parseFormattedText = (text: string): React.ReactNode[] => {
     lastIndex = match.index + full.length;
   }
 
-  // Add remaining text
   if (lastIndex < text.length) {
     result.push(<React.Fragment key={key++}>{text.slice(lastIndex)}</React.Fragment>);
   }

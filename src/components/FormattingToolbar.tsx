@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useRef } from "react";
 import { Bold, Italic, Underline, Code } from "lucide-react";
+import LinkifiedText from "@/components/LinkifiedText";
 
 interface FormattingToolbarProps {
   targetRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement>;
@@ -14,46 +15,10 @@ const FORMATS = [
   { icon: Code, wrap: ["`", "`"], label: "Code" },
 ] as const;
 
+const HAS_FORMATTING = /(\*\*|__|`|\*(?!\*))/;
+
 const FormattingToolbar = ({ targetRef, value, onChange }: FormattingToolbarProps) => {
-  const [visible, setVisible] = useState(false);
   const toolbarRef = useRef<HTMLDivElement>(null);
-
-  const checkSelection = useCallback(() => {
-    const el = targetRef.current;
-    if (!el || document.activeElement !== el) {
-      setVisible(false);
-      return;
-    }
-    const start = el.selectionStart ?? 0;
-    const end = el.selectionEnd ?? 0;
-    setVisible(start !== end);
-  }, [targetRef]);
-
-  useEffect(() => {
-    const el = targetRef.current;
-    if (!el) return;
-
-    const handler = () => requestAnimationFrame(checkSelection);
-    const blurHandler = () => {
-      setTimeout(() => {
-        if (!toolbarRef.current?.contains(document.activeElement)) {
-          setVisible(false);
-        }
-      }, 150);
-    };
-
-    el.addEventListener("select", handler);
-    el.addEventListener("mouseup", handler);
-    el.addEventListener("keyup", handler);
-    el.addEventListener("blur", blurHandler);
-
-    return () => {
-      el.removeEventListener("select", handler);
-      el.removeEventListener("mouseup", handler);
-      el.removeEventListener("keyup", handler);
-      el.removeEventListener("blur", blurHandler);
-    };
-  }, [targetRef, checkSelection]);
 
   const applyFormat = (prefix: string, suffix: string) => {
     const el = targetRef.current;
@@ -87,25 +52,33 @@ const FormattingToolbar = ({ targetRef, value, onChange }: FormattingToolbarProp
     });
   };
 
-  if (!visible) return null;
-
   return (
-    <div
-      ref={toolbarRef}
-      className="flex items-center gap-0.5 rounded-lg border bg-popover px-1 py-1 shadow-sm mt-1"
-      onMouseDown={(e) => e.preventDefault()}
-    >
-      {FORMATS.map(({ icon: Icon, wrap, label }) => (
-        <button
-          key={label}
-          type="button"
-          onClick={() => applyFormat(wrap[0], wrap[1])}
-          className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-          title={label}
-        >
-          <Icon className="h-3.5 w-3.5" />
-        </button>
-      ))}
+    <div className="space-y-1.5 mt-1">
+      {/* Toolbar - always visible */}
+      <div
+        ref={toolbarRef}
+        className="flex items-center gap-0.5 rounded-lg border bg-popover px-1 py-1 shadow-sm w-fit"
+        onMouseDown={(e) => e.preventDefault()}
+      >
+        {FORMATS.map(({ icon: Icon, wrap, label }) => (
+          <button
+            key={label}
+            type="button"
+            onClick={() => applyFormat(wrap[0], wrap[1])}
+            className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+            title={label}
+          >
+            <Icon className="h-3.5 w-3.5" />
+          </button>
+        ))}
+      </div>
+
+      {/* Live preview */}
+      {HAS_FORMATTING.test(value) && (
+        <div className="rounded-lg border border-dashed bg-muted/20 px-3 py-2 text-sm">
+          <LinkifiedText text={value} />
+        </div>
+      )}
     </div>
   );
 };
