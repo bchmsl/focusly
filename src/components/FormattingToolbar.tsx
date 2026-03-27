@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { Bold, Italic, Underline, Code } from "lucide-react";
-import LinkifiedText from "@/components/LinkifiedText";
+
 
 interface FormattingToolbarProps {
   targetRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement>;
@@ -15,7 +15,7 @@ const FORMATS = [
   { icon: Code, wrap: ["`", "`"], label: "Code" },
 ] as const;
 
-const HAS_FORMATTING = /(\*\*|__|`|\*(?!\*))/;
+
 
 const FormattingToolbar = ({ targetRef, value, onChange }: FormattingToolbarProps) => {
   const toolbarRef = useRef<HTMLDivElement>(null);
@@ -73,12 +73,6 @@ const FormattingToolbar = ({ targetRef, value, onChange }: FormattingToolbarProp
         ))}
       </div>
 
-      {/* Live preview */}
-      {HAS_FORMATTING.test(value) && (
-        <div className="rounded-lg border border-dashed bg-muted/20 px-3 py-2 text-sm">
-          <LinkifiedText text={value} />
-        </div>
-      )}
     </div>
   );
 };
