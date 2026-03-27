@@ -73,12 +73,6 @@ const FormattingToolbar = ({ targetRef, value, onChange }: FormattingToolbarProp
         ))}
       </div>
 
-      {/* Live preview */}
-      {HAS_FORMATTING.test(value) && (
-        <div className="rounded-lg border border-dashed bg-muted/20 px-3 py-2 text-sm">
-          <LinkifiedText text={value} />
-        </div>
-      )}
     </div>
   );
 };
