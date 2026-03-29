@@ -33,6 +33,8 @@ const PomodoroTimer = ({ onTimerEnd, reloadRef, expanded }: PomodoroTimerProps) 
   const [isRunning, setIsRunning] = useState(false);
   const [completedSessions, setCompletedSessions] = useState(0);
   const [loaded, setLoaded] = useState(false);
+  // Guard: skip saves until initial load is fully applied
+  const initialLoadDoneRef = useRef(false);
   const intervalRef = useRef<number | null>(null);
   const saveTimeoutRef = useRef<number | null>(null);
   // Guard to ignore realtime echoes of our own saves
