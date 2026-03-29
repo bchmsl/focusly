@@ -142,6 +142,11 @@ const PomodoroTimer = ({ onTimerEnd, reloadRef, expanded }: PomodoroTimerProps) 
     }
 
     setLoaded(true);
+    // Allow saves only after React has processed the loaded state
+    // to prevent the settings-change effect from overwriting remote state
+    requestAnimationFrame(() => {
+      initialLoadDoneRef.current = true;
+    });
   }, [user, settingsLoaded, settings.focusDuration, settings.shortBreakDuration, settings.longBreakDuration]);
 
   // Load timer state from DB (once per user)
