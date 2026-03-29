@@ -188,17 +188,22 @@ const PomodoroTimer = ({ onTimerEnd, reloadRef, expanded }: PomodoroTimerProps) 
             tl = Math.max(0, tl - elapsed);
           }
 
-          // Apply remote state — do NOT call clearTimer() here.
-          // The tick effect manages the interval based on isRunning;
-          // calling clearTimer while isRunning stays true kills the
-          // interval without re-creating it (React skips re-render
-          // when setState receives the same value).
+          const shouldRun = data.is_running && tl > 0;
+          const localRunning = isRunningRef.current;
+          const localTimeLeft = timeLeftRef.current ?? 0;
+          const localMode = modeRef.current;
+
+          // If both devices are running the same mode, only apply
+          // the remote update when the time difference is significant
+          // (> 3s). This prevents the "jumping" caused by periodic
+          // saves from the other device.
+          if (localRunning && shouldRun && m === localMode) {
+            const drift = Math.abs(localTimeLeft - tl);
+            if (drift <= 3) return; // close enough, ignore
+          }
+
           setMode(m);
           setTimeLeft(tl);
-          const shouldRun = data.is_running && tl > 0;
-          // If running state actually changes, the tick effect re-fires.
-          // If it stays the same, the interval keeps ticking with the
-          // updated timeLeft value — no freeze.
           setIsRunning(shouldRun);
           setCompletedSessions(data.completed_sessions);
         }
