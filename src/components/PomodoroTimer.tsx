@@ -35,16 +35,22 @@ const PomodoroTimer = ({ onTimerEnd, reloadRef, expanded }: PomodoroTimerProps) 
   const [loaded, setLoaded] = useState(false);
   const intervalRef = useRef<number | null>(null);
   const saveTimeoutRef = useRef<number | null>(null);
+  // Guard to ignore realtime echoes of our own saves
+  const ignoringRealtimeUntilRef = useRef<number>(0);
 
   // Use refs to avoid stale closures in the timer interval
   const modeRef = useRef(mode);
   const completedSessionsRef = useRef(completedSessions);
   const settingsRef = useRef(settings);
+  const isRunningRef = useRef(isRunning);
+  const timeLeftRef = useRef(timeLeft);
   const loadedTimerStateForUserRef = useRef<string | null>(null);
 
   modeRef.current = mode;
   completedSessionsRef.current = completedSessions;
   settingsRef.current = settings;
+  isRunningRef.current = isRunning;
+  timeLeftRef.current = timeLeft;
 
   const durations = getDurations();
   const totalTime = durations[mode];
@@ -78,11 +84,13 @@ const PomodoroTimer = ({ onTimerEnd, reloadRef, expanded }: PomodoroTimerProps) 
     }
   }, [settings.soundEnabled, settings.soundVolume]);
 
-  // Save timer state (debounced)
+  // Save timer state (debounced) – also sets a guard window for realtime echoes
   const saveState = useCallback(
     (m: TimerMode, tl: number, running: boolean, sessions: number) => {
       if (!user) return;
       if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+      // Ignore realtime echoes for 2 seconds after our own save
+      ignoringRealtimeUntilRef.current = Date.now() + 2000;
       saveTimeoutRef.current = window.setTimeout(async () => {
         await supabase
           .from("timer_state")
@@ -94,7 +102,7 @@ const PomodoroTimer = ({ onTimerEnd, reloadRef, expanded }: PomodoroTimerProps) 
             completed_sessions: sessions,
             last_tick_at: running ? new Date().toISOString() : null,
           }, { onConflict: "user_id" });
-      }, 500);
+      }, 300);
     },
     [user]
   );
@@ -132,7 +140,7 @@ const PomodoroTimer = ({ onTimerEnd, reloadRef, expanded }: PomodoroTimerProps) 
     setLoaded(true);
   }, [user, settingsLoaded, settings.focusDuration, settings.shortBreakDuration, settings.longBreakDuration]);
 
-  // Load timer state from DB (once per user) so settings updates don't get overwritten
+  // Load timer state from DB (once per user)
   useEffect(() => {
     if (!user || !settingsLoaded) return;
     if (loadedTimerStateForUserRef.current === user.id) return;
@@ -144,6 +152,56 @@ const PomodoroTimer = ({ onTimerEnd, reloadRef, expanded }: PomodoroTimerProps) 
   useEffect(() => {
     if (reloadRef) reloadRef.current = loadTimerState;
   }, [reloadRef, loadTimerState]);
+
+  // Realtime subscription – sync timer across devices
+  useEffect(() => {
+    if (!user || !loaded) return;
+
+    const channel = supabase
+      .channel(`timer_state_${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'timer_state',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          // Skip echoes from our own saves
+          if (Date.now() < ignoringRealtimeUntilRef.current) return;
+
+          const data = payload.new as {
+            mode: string;
+            time_left: number;
+            is_running: boolean;
+            completed_sessions: number;
+            last_tick_at: string | null;
+          };
+
+          const m = data.mode as TimerMode;
+          let tl = data.time_left;
+
+          // Account for time elapsed since the remote save
+          if (data.is_running && data.last_tick_at) {
+            const elapsed = Math.floor((Date.now() - new Date(data.last_tick_at).getTime()) / 1000);
+            tl = Math.max(0, tl - elapsed);
+          }
+
+          // Apply remote state
+          clearTimer();
+          setMode(m);
+          setTimeLeft(tl);
+          setIsRunning(data.is_running && tl > 0);
+          setCompletedSessions(data.completed_sessions);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, loaded, clearTimer]);
 
   const switchMode = useCallback(
     (newMode: TimerMode, sessions?: number, autoStart?: boolean) => {
@@ -188,14 +246,14 @@ const PomodoroTimer = ({ onTimerEnd, reloadRef, expanded }: PomodoroTimerProps) 
     if (isRunning) {
       intervalRef.current = window.setInterval(() => {
         setTimeLeft((prev) => {
-          if (prev <= 1) {
+          const current = prev ?? 0;
+          if (current <= 1) {
             clearTimer();
             setIsRunning(false);
-            // Use setTimeout to avoid setState-in-setState
             setTimeout(() => handleTimerComplete(), 50);
             return 0;
           }
-          return prev - 1;
+          return current - 1;
         });
       }, 1000);
     } else {
@@ -203,6 +261,18 @@ const PomodoroTimer = ({ onTimerEnd, reloadRef, expanded }: PomodoroTimerProps) 
     }
     return clearTimer;
   }, [isRunning, clearTimer, handleTimerComplete, loaded]);
+
+  // Persist time_left periodically while running (every 10 seconds)
+  useEffect(() => {
+    if (!loaded || !isRunning) return;
+    const persist = window.setInterval(() => {
+      const tl = timeLeftRef.current;
+      if (tl != null && tl > 0) {
+        saveState(modeRef.current, tl, true, completedSessionsRef.current);
+      }
+    }, 10000);
+    return () => clearInterval(persist);
+  }, [loaded, isRunning, saveState]);
 
   // Update duration when settings change
   const prevFocusDur = useRef(settings.focusDuration);
@@ -223,7 +293,6 @@ const PomodoroTimer = ({ onTimerEnd, reloadRef, expanded }: PomodoroTimerProps) 
 
     if (!changed) return;
 
-    // Always reset timer and progress when duration changes, even if running
     clearTimer();
     const newDuration = getDurations()[mode];
     setTimeLeft(newDuration);
