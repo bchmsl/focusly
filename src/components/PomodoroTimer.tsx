@@ -33,6 +33,8 @@ const PomodoroTimer = ({ onTimerEnd, reloadRef, expanded }: PomodoroTimerProps) 
   const [isRunning, setIsRunning] = useState(false);
   const [completedSessions, setCompletedSessions] = useState(0);
   const [loaded, setLoaded] = useState(false);
+  // Guard: skip saves until initial load is fully applied
+  const initialLoadDoneRef = useRef(false);
   const intervalRef = useRef<number | null>(null);
   const saveTimeoutRef = useRef<number | null>(null);
   // Guard to ignore realtime echoes of our own saves
@@ -88,6 +90,8 @@ const PomodoroTimer = ({ onTimerEnd, reloadRef, expanded }: PomodoroTimerProps) 
   const saveState = useCallback(
     (m: TimerMode, tl: number, running: boolean, sessions: number) => {
       if (!user) return;
+      // Don't save during initial load — prevents overwriting remote state
+      if (!initialLoadDoneRef.current) return;
       if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
       // Ignore realtime echoes for 2 seconds after our own save
       ignoringRealtimeUntilRef.current = Date.now() + 2000;
@@ -138,6 +142,11 @@ const PomodoroTimer = ({ onTimerEnd, reloadRef, expanded }: PomodoroTimerProps) 
     }
 
     setLoaded(true);
+    // Allow saves only after React has processed the loaded state
+    // to prevent the settings-change effect from overwriting remote state
+    requestAnimationFrame(() => {
+      initialLoadDoneRef.current = true;
+    });
   }, [user, settingsLoaded, settings.focusDuration, settings.shortBreakDuration, settings.longBreakDuration]);
 
   // Load timer state from DB (once per user)
