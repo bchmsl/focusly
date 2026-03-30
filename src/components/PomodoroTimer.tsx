@@ -86,15 +86,14 @@ const PomodoroTimer = ({ onTimerEnd, reloadRef, expanded }: PomodoroTimerProps) 
     }
   }, [settings.soundEnabled, settings.soundVolume]);
 
-  // Save timer state (debounced) – also sets a guard window for realtime echoes
+  // Save timer state immediately on explicit actions only
   const saveState = useCallback(
     (m: TimerMode, tl: number, running: boolean, sessions: number) => {
       if (!user) return;
-      // Don't save during initial load — prevents overwriting remote state
       if (!initialLoadDoneRef.current) return;
       if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-      // Ignore realtime echoes for 2 seconds after our own save
       ignoringRealtimeUntilRef.current = Date.now() + 2000;
+      // Save immediately – only called on user actions
       saveTimeoutRef.current = window.setTimeout(async () => {
         await supabase
           .from("timer_state")
@@ -106,7 +105,7 @@ const PomodoroTimer = ({ onTimerEnd, reloadRef, expanded }: PomodoroTimerProps) 
             completed_sessions: sessions,
             last_tick_at: running ? new Date().toISOString() : null,
           }, { onConflict: "user_id" });
-      }, 300);
+      }, 50);
     },
     [user]
   );
@@ -283,17 +282,7 @@ const PomodoroTimer = ({ onTimerEnd, reloadRef, expanded }: PomodoroTimerProps) 
     return clearTimer;
   }, [isRunning, clearTimer, handleTimerComplete, loaded]);
 
-  // Persist time_left periodically while running (every 10 seconds)
-  useEffect(() => {
-    if (!loaded || !isRunning) return;
-    const persist = window.setInterval(() => {
-      const tl = timeLeftRef.current;
-      if (tl != null && tl > 0) {
-        saveState(modeRef.current, tl, true, completedSessionsRef.current);
-      }
-    }, 10000);
-    return () => clearInterval(persist);
-  }, [loaded, isRunning, saveState]);
+  // Removed periodic save – we only save on explicit user actions now
 
   // Update duration when settings change
   const prevFocusDur = useRef(settings.focusDuration);
