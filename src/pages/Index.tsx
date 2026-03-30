@@ -161,7 +161,6 @@ const Index = () => {
   const reloadAll = useCallback(async () => {
     await Promise.all([reloadSettings(), reloadTheme()]);
     todoReloadRef.current?.();
-    timerReloadRef.current?.();
     notesReloadRef.current?.();
   }, [reloadSettings, reloadTheme]);
 
@@ -174,7 +173,6 @@ const Index = () => {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'tags' }, () => { todoReloadRef.current?.(); notesReloadRef.current?.(); })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'notes' }, () => { notesReloadRef.current?.(); })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'note_tags' }, () => { notesReloadRef.current?.(); })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'timer_state' }, () => { timerReloadRef.current?.(); })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'user_settings' }, () => {
         if (debounceRef.current) clearTimeout(debounceRef.current);
         debounceRef.current = setTimeout(() => { reloadSettings(); reloadTheme(); }, 300);
@@ -203,7 +201,7 @@ const Index = () => {
   const renderCardContent = (card: CardId, isExpanded = false) => {
     switch (card) {
       case "clock": return <ClockDisplay expanded={isExpanded} />;
-      case "timer": return <PomodoroTimer onTimerEnd={handleTimerEnd} reloadRef={timerReloadRef} expanded={isExpanded} />;
+      case "timer": return <PomodoroTimer onTimerEnd={handleTimerEnd} expanded={isExpanded} />;
       case "tasks": return <TodoList reloadRef={todoReloadRef} expanded={isExpanded} />;
       case "notes": return <NotesList reloadRef={notesReloadRef} expanded={isExpanded} />;
     }
