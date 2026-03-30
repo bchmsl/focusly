@@ -56,8 +56,8 @@ const PomodoroTimer = ({ onTimerEnd, reloadRef, expanded }: PomodoroTimerProps) 
 
   const durations = getDurations();
   const totalTime = durations[mode];
-  const displayTimeLeft = timeLeft ?? durations.focus;
-  const progress = Math.max(0, Math.min(100, ((totalTime - displayTimeLeft) / totalTime) * 100));
+  const displayTimeLeft = timeLeft;
+  const progress = displayTimeLeft == null ? 0 : Math.max(0, Math.min(100, ((totalTime - displayTimeLeft) / totalTime) * 100));
 
   const clearTimer = useCallback(() => {
     if (intervalRef.current) {
@@ -290,7 +290,7 @@ const PomodoroTimer = ({ onTimerEnd, reloadRef, expanded }: PomodoroTimerProps) 
   const prevLongDur = useRef(settings.longBreakDuration);
 
   useEffect(() => {
-    if (!loaded) return;
+    if (!loaded || !initialLoadDoneRef.current) return;
 
     const changed =
       prevFocusDur.current !== settings.focusDuration ||
@@ -308,7 +308,7 @@ const PomodoroTimer = ({ onTimerEnd, reloadRef, expanded }: PomodoroTimerProps) 
     setTimeLeft(newDuration);
     setIsRunning(false);
     saveState(mode, newDuration, false, completedSessions);
-  }, [settings.focusDuration, settings.shortBreakDuration, settings.longBreakDuration, loaded, isRunning, mode, getDurations, saveState, completedSessions]);
+  }, [settings.focusDuration, settings.shortBreakDuration, settings.longBreakDuration, loaded, mode, getDurations, saveState, completedSessions]);
 
   const toggleRunning = () => {
     const next = !isRunning;
