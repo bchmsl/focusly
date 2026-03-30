@@ -36,7 +36,6 @@ const Index = () => {
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const layoutSaveRef = useRef<NodeJS.Timeout | null>(null);
   const todoReloadRef = useRef<(() => void) | null>(null);
-  const timerReloadRef = useRef<(() => void) | null>(null);
   const notesReloadRef = useRef<(() => void) | null>(null);
   const [expandedCard, setExpandedCard] = useState<CardId | null>(null);
 
