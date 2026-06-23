@@ -38,6 +38,7 @@ const TodoList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject<
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const editDialogOpenRef = useRef(false);
   const deletedRef = useRef(false);
+  const reorderingRef = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const loadTasks = useCallback(async () => {
@@ -66,12 +67,12 @@ const TodoList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject<
   useEffect(() => {
     if (reloadRef) {
       reloadRef.current = () => {
-        if (!editDialogOpenRef.current) {
-          loadTasks();
-        }
+        if (editDialogOpenRef.current || reorderingRef.current) return;
+        loadTasks();
       };
     }
   }, [reloadRef, loadTasks]);
+
 
   // Helpers
   const toggleExpanded = (id: string) => {
@@ -154,11 +155,18 @@ const TodoList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject<
     );
 
     const changed = visible.filter((t) => idToNewPos.get(t.id) !== t.position);
+    if (changed.length === 0) return;
+
+    reorderingRef.current = true;
     Promise.all(
       changed.map((t) =>
         supabase.from("tasks").update({ position: idToNewPos.get(t.id)! }).eq("id", t.id)
       )
-    );
+    ).finally(() => {
+      // Keep the guard up briefly so realtime echoes from our own writes don't
+      // trigger a partial-state reload that visually reshuffles items.
+      setTimeout(() => { reorderingRef.current = false; }, 800);
+    });
   };
 
   const openEditDialog = (task: Task) => {
