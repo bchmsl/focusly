@@ -38,6 +38,7 @@ const TodoList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject<
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const editDialogOpenRef = useRef(false);
   const deletedRef = useRef(false);
+  const reorderingRef = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const loadTasks = useCallback(async () => {
