@@ -131,30 +131,34 @@ const TodoList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject<
     setExpandedIds((prev) => { const next = new Set(prev); next.delete(id); return next; });
   };
 
-  const reorder = async (list: Task[], startIndex: number, endIndex: number) => {
-    const result = [...list];
-    const [removed] = result.splice(startIndex, 1);
-    result.splice(endIndex, 0, removed);
-    const updated = result.map((t, i) => ({ ...t, position: i }));
-    setTasks((prev) => {
-      const ids = new Set(updated.map((u) => u.id));
-      return [...prev.filter((t) => !ids.has(t.id)), ...updated];
-    });
-    await Promise.all(
-      updated.filter((t, i) => list[i]?.id !== t.id).map((t) =>
-        supabase.from("tasks").update({ position: t.position }).eq("id", t.id)
-      )
-    );
-  };
-
   const onDragEnd = (result: DropResult) => {
     if (!result.destination) return;
     const { source, destination } = result;
     if (source.index === destination.index && source.droppableId === destination.droppableId) return;
-    if (source.droppableId === "pending") {
-      const pending = topLevel.filter((t) => !t.done).sort((a, b) => a.position - b.position);
-      reorder(pending, source.index, destination.index);
-    }
+    if (source.droppableId !== "pending") return;
+
+    // Reorder the exact list shown to the user (respects tag filter)
+    const visible = [...pendingTop];
+    const [removed] = visible.splice(source.index, 1);
+    if (!removed) return;
+    visible.splice(destination.index, 0, removed);
+
+    // Assign positions from the pool of positions occupied by the visible items,
+    // so we don't collide with hidden (filtered-out or completed) tasks' positions.
+    const positionPool = pendingTop.map((t) => t.position).sort((a, b) => a - b);
+    const idToNewPos = new Map<string, number>();
+    visible.forEach((t, i) => idToNewPos.set(t.id, positionPool[i]));
+
+    setTasks((prev) =>
+      prev.map((t) => (idToNewPos.has(t.id) ? { ...t, position: idToNewPos.get(t.id)! } : t))
+    );
+
+    const changed = visible.filter((t) => idToNewPos.get(t.id) !== t.position);
+    Promise.all(
+      changed.map((t) =>
+        supabase.from("tasks").update({ position: idToNewPos.get(t.id)! }).eq("id", t.id)
+      )
+    );
   };
 
   const openEditDialog = (task: Task) => {
