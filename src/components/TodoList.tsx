@@ -67,12 +67,12 @@ const TodoList = ({ reloadRef, expanded }: { reloadRef?: React.MutableRefObject<
   useEffect(() => {
     if (reloadRef) {
       reloadRef.current = () => {
-        if (!editDialogOpenRef.current) {
-          loadTasks();
-        }
+        if (editDialogOpenRef.current || reorderingRef.current) return;
+        loadTasks();
       };
     }
   }, [reloadRef, loadTasks]);
+
 
   // Helpers
   const toggleExpanded = (id: string) => {
